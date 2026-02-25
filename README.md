@@ -50,7 +50,7 @@ O dashboard estará disponível em: `http://<IP-DO-SERVIDOR>:9001`
 - **Usuário padrão**: `admin`
 - **Senha padrão**: `admin`
 
-> ⚠ **Importante**: Altere as credenciais antes de expor o dashboard na rede. As credenciais são configuradas em `web/app.py`.
+> **Importante**: Altere as credenciais antes de expor na rede. As credenciais são configuradas em `web/app.py`.
 
 ## Capacidade e Retenção
 
@@ -154,3 +154,4 @@ camera_monitor/
 | **WAL mode** | `PRAGMA journal_mode=WAL` | Permite leituras e escritas simultâneas (web lê enquanto monitor escreve) sem lock total |
 
 ---
+
