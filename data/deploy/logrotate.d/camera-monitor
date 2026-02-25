@@ -1,0 +1,20 @@
+/var/log/camera-monitor/*.log {
+    # Rotaciona diariamente
+    daily
+
+    # Mantém 30 dias de histórico comprimido
+    rotate 30
+
+    # Comprime arquivos rotacionados
+    compress
+    delaycompress
+
+    # Não falha se o arquivo não existir
+    missingok
+
+    # Não rotaciona se vazio
+    notifempty
+
+    # Usa copytruncate pois o Python não escuta sinais de rotação nativamente
+    copytruncate
+}

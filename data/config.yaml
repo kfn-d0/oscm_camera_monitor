@@ -1,0 +1,23 @@
+timezone: America/Fortaleza
+cameras: []
+retention:
+  checks_days: 90
+  vacuum_interval_days: 7
+monitoring:
+  check_interval: 30
+  timeout: 2.0
+  failure_threshold: 3
+  recovery_threshold: 2
+web:
+  host: 0.0.0.0
+  port: 9001
+database_url: sqlite:///data/camera_monitor.db
+logging:
+  path: data/camera-monitor.log
+telegram:
+  bot_token: BOT_TOKEN_HERE
+  chat_id: CHANNEL_ID_HERE
+  msg_format_offline: '🚨 <b>CÂMERA OFFLINE</b>\nNome: <b>{name}</b>\nHost: <code>{host}</code>\nHora:
+    {timestamp}\nMotivo: {detail}\nLocalização: {location}'
+  msg_format_online: '✅ <b>CÂMERA ONLINE</b>\nNome: <b>{name}</b>\nHost: <code>{host}</code>\nHora:
+    {timestamp}\nTempo offline: {duration_str}'

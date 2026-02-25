@@ -1,0 +1,195 @@
+# Template Zabbix para Camera Monitor
+# Compatível com Zabbix 6.x (6.0 LTS / 6.4 / 7.0)
+#
+# Como importar:
+#   Zabbix UI → Data collection → Templates → Import → selecione este arquivo
+
+zabbix_export:
+  version: '6.4'
+
+  template_groups:
+    - uuid: 7df96b18c230490a9a0a9e2307226338
+      name: Templates
+
+  templates:
+    - uuid: 3e5b38a44b7d4e568b2a1c8e9f0d7b2a
+      template: 'Camera Monitor'
+      name: 'Camera Monitor'
+      description: |
+        Monitora o sistema Camera Monitor via API REST integrada.
+
+        Funcionalidades:
+          - Health check do serviço (alerta se Camera Monitor cair)
+          - Totais: câmeras online / offline / total
+          - LLD: descobre câmeras automaticamente e cria itens/triggers por câmera
+          - RTT por câmera com alertas de alta latência
+
+        Configuração:
+          {$CM_PORT}     → Porta do Camera Monitor (padrão: 9001)
+          {$CM_API_KEY}  → API Key definida em config.yaml → zabbix_api_key
+          {$CM_RTT_WARN} → Threshold de latência WARNING (padrão: 500 ms)
+
+        Repositório: https://github.com/kfn-d0/camera_monitor
+
+      groups:
+        - name: Templates
+
+      macros:
+        - macro: '{$CM_PORT}'
+          value: '9001'
+          description: 'Porta do serviço Camera Monitor'
+
+        - macro: '{$CM_API_KEY}'
+          value: ''
+          description: 'API Key (zabbix_api_key no config.yaml). Deixe vazio se o Zabbix acessa de localhost.'
+
+        - macro: '{$CM_RTT_WARN}'
+          value: '500'
+          description: 'Threshold de latência para alerta WARNING (ms)'
+
+      items:
+        - uuid: b1c2d3e4f5b142d384f5b1c2d3e4f5b1
+          name: 'Camera Monitor: Status do Serviço'
+          type: HTTP_AGENT
+          key: 'cm.ping'
+          delay: 1m
+          value_type: TEXT
+          url: 'http://{HOST.CONN}:{$CM_PORT}/api/zabbix/ping'
+          description: 'Verifica se o serviço Camera Monitor está respondendo.'
+          triggers:
+            - uuid: c1d2e3f4c1d243f481d2e3f4c1d2e3f4
+              expression: 'nodata(/Camera Monitor/cm.ping,3m)=1'
+              name: 'Camera Monitor: Serviço indisponível em {HOST.NAME}'
+              priority: HIGH
+              description: |
+                O serviço Camera Monitor não responde há mais de 3 minutos.
+                Verifique se o processo está rodando:
+                  systemctl status camera-monitor
+              manual_close: 'YES'
+
+        - uuid: d1e2f3d1e2f341e283d1e2f3d1e2f3d1
+          name: 'Camera Monitor: Dados do Resumo (JSON)'
+          type: HTTP_AGENT
+          key: 'cm.summary.raw'
+          delay: 1m
+          value_type: TEXT
+          url: 'http://{HOST.CONN}:{$CM_PORT}/api/zabbix/summary?key={$CM_API_KEY}'
+          description: 'Item mestre do resumo. Os itens de contagem dependem deste.'
+
+        - uuid: e1f2e1f2e1f241f281f2e1f2e1f2e1f2
+          name: 'Camera Monitor: Total de Câmeras'
+          type: DEPENDENT
+          key: 'cm.summary.total'
+          value_type: UNSIGNED
+          master_item:
+            key: 'cm.summary.raw'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.total_cameras'
+          description: 'Número total de câmeras habilitadas no sistema.'
+
+        - uuid: f1f2f3f4f1f243f481f2f3f4f1f2f3f4
+          name: 'Camera Monitor: Câmeras Online'
+          type: DEPENDENT
+          key: 'cm.summary.online'
+          value_type: UNSIGNED
+          master_item:
+            key: 'cm.summary.raw'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.online_cameras'
+          description: 'Número de câmeras atualmente online.'
+
+        - uuid: a2b3c4d5a2b344d582b3c4d5a2b3c4d5
+          name: 'Camera Monitor: Câmeras Offline'
+          type: DEPENDENT
+          key: 'cm.summary.offline'
+          value_type: UNSIGNED
+          master_item:
+            key: 'cm.summary.raw'
+          preprocessing:
+            - type: JSONPATH
+              parameters:
+                - '$.offline_cameras'
+          description: 'Número de câmeras atualmente offline.'
+          triggers:
+            - uuid: b3c4d5e6b3c445e683c4d5e6b3c4d5e6
+              expression: 'last(/Camera Monitor/cm.summary.offline)>0'
+              name: 'Camera Monitor: {ITEM.LASTVALUE} câmera(s) offline em {HOST.NAME}'
+              priority: HIGH
+              manual_close: 'YES'
+              description: |
+                Uma ou mais câmeras estão offline segundo o Camera Monitor.
+                Acesse o dashboard para ver quais câmeras estão com problema:
+                  http://{HOST.CONN}:{$CM_PORT}
+
+      discovery_rules:
+        - uuid: c4d5e6f7c4d546f784d5e6f7c4d5e6f7
+          name: 'Camera Monitor: Descoberta de Câmeras'
+          type: HTTP_AGENT
+          key: 'cm.cameras.discovery'
+          delay: 5m
+          url: 'http://{HOST.CONN}:{$CM_PORT}/api/zabbix/discovery?key={$CM_API_KEY}'
+          description: |
+            Descobre todas as câmeras cadastradas no Camera Monitor.
+
+          item_prototypes:
+            - uuid: d5e6f7d5e6f745e685f7d5e6f7d5e6f7
+              name: 'Câmera {#CAM_NAME}: Dados Brutos (JSON)'
+              type: HTTP_AGENT
+              key: 'cm.camera.raw[{#CAM_ID}]'
+              delay: 1m
+              value_type: TEXT
+              url: 'http://{HOST.CONN}:{$CM_PORT}/api/zabbix/camera/{#CAM_ID}?key={$CM_API_KEY}'
+
+            - uuid: e6f7e6f7e6f746f786f7e6f7e6f7e6f7
+              name: 'Câmera {#CAM_NAME}: Status'
+              type: DEPENDENT
+              key: 'cm.camera.status[{#CAM_ID}]'
+              value_type: TEXT
+              master_item:
+                key: 'cm.camera.raw[{#CAM_ID}]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.status'
+
+            - uuid: f7f8f7f8f7f847f887f8f7f8f7f8f7f8
+              name: 'Câmera {#CAM_NAME}: Código de Status'
+              type: DEPENDENT
+              key: 'cm.camera.status_code[{#CAM_ID}]'
+              value_type: FLOAT
+              master_item:
+                key: 'cm.camera.raw[{#CAM_ID}]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.status_code'
+
+            - uuid: a8b9a8b9a8b948b988b9a8b9a8b9a8b9
+              name: 'Câmera {#CAM_NAME}: RTT'
+              type: DEPENDENT
+              key: 'cm.camera.rtt[{#CAM_ID}]'
+              value_type: FLOAT
+              units: ms
+              master_item:
+                key: 'cm.camera.raw[{#CAM_ID}]'
+              preprocessing:
+                - type: JSONPATH
+                  parameters:
+                    - '$.rtt_ms'
+
+          trigger_prototypes:
+            - uuid: c0d1c0d1c0d140d180d1c0d1c0d1c0d1
+              expression: 'last(/Camera Monitor/cm.camera.status_code[{#CAM_ID}])=0'
+              name: 'Câmera {#CAM_NAME} ({#CAM_HOST}): OFFLINE'
+              priority: HIGH
+
+            - uuid: d1e2d1e2d1e241e281e2d1e2d1e2d1e2
+              expression: >-
+                last(/Camera Monitor/cm.camera.rtt[{#CAM_ID}])>{$CM_RTT_WARN}
+                and last(/Camera Monitor/cm.camera.status_code[{#CAM_ID}])=1
+              name: 'Câmera {#CAM_NAME}: Latência elevada (RTT > {$CM_RTT_WARN}ms)'
+              priority: WARNING

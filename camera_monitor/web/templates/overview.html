@@ -1,0 +1,340 @@
+{% extends "base.html" %}
+
+{% block title %}Visão Geral – Camera Monitor{% endblock %}
+{% block page_title %}📷 Visão Geral – São Luís / MA{% endblock %}
+
+{% block extra_head %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    #map-container {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        overflow: hidden;
+        margin-bottom: 24px;
+    }
+
+    #map-header {
+        padding: 14px 20px;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    #map {
+        height: 380px;
+        width: 100%;
+        background: #1a1f27;
+    }
+
+    
+    .leaflet-tile {
+        filter: brightness(0.7) invert(1) contrast(1.1) hue-rotate(200deg) saturate(0.4) brightness(0.7);
+    }
+
+    .leaflet-container {
+        background: #1a1f27;
+    }
+
+    
+    .cam-marker {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 50%;
+        border: 3px solid;
+        box-shadow: 0 0 12px rgba(0, 0, 0, .6);
+        font-size: 16px;
+        font-weight: 700;
+        transition: transform .2s;
+        cursor: pointer;
+    }
+
+    .cam-marker:hover {
+        transform: scale(1.2);
+    }
+
+    .cam-marker.online {
+        background: rgba(63, 185, 80, .25);
+        border-color: #3fb950;
+        color: #3fb950;
+    }
+
+    .cam-marker.offline {
+        background: rgba(248, 81, 73, .25);
+        border-color: #f85149;
+        color: #f85149;
+    }
+
+    .cam-marker.unknown {
+        background: rgba(210, 153, 34, .25);
+        border-color: #d29922;
+        color: #d29922;
+    }
+
+    
+    .cam-marker.offline::after {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        border: 2px solid #f85149;
+        animation: ring-pulse 1.5s ease-out infinite;
+    }
+
+    @keyframes ring-pulse {
+        0% {
+            transform: scale(1);
+            opacity: 1;
+        }
+
+        100% {
+            transform: scale(2.2);
+            opacity: 0;
+        }
+    }
+
+    
+    .leaflet-popup-content-wrapper {
+        background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
+        border-radius: 10px !important;
+        box-shadow: var(--shadow) !important;
+        color: var(--text-primary) !important;
+    }
+
+    .leaflet-popup-tip {
+        background: var(--bg-card) !important;
+    }
+
+    .leaflet-popup-content {
+        margin: 12px 16px !important;
+        font-family: 'Inter', sans-serif;
+    }
+
+    .popup-title {
+        font-weight: 700;
+        font-size: 14px;
+        margin-bottom: 6px;
+    }
+
+    .popup-row {
+        font-size: 12px;
+        color: var(--text-secondary);
+        margin: 3px 0;
+    }
+
+    .popup-link {
+        display: inline-block;
+        margin-top: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-hover);
+        text-decoration: none;
+    }
+
+    .popup-link:hover {
+        text-decoration: underline;
+    }
+
+    .leaflet-popup-close-button {
+        color: var(--text-muted) !important;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-icon total">📹</div>
+        <div>
+            <div class="stat-value">{{ stats.total_cameras }}</div>
+            <div class="stat-label">Total de Câmeras</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon online">✅</div>
+        <div>
+            <div class="stat-value" style="color:var(--online);">{{ stats.online_cameras }}</div>
+            <div class="stat-label">Online</div>
+        </div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-icon offline">🚨</div>
+        <div>
+            <div class="stat-value" style="color:var(--offline);">{{ stats.offline_cameras }}</div>
+            <div class="stat-label">Offline / Com Ticket Aberto</div>
+        </div>
+    </div>
+</div>
+
+
+<div id="map-container">
+    <div id="map-header">
+        <span>🗺️ Mapa – São Luís / MA</span>
+        <span style="font-size:12px;color:var(--text-muted);font-weight:400;">
+            📍 Clique em um marcador para ver detalhes
+        </span>
+    </div>
+    <div id="map"></div>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <span>📋 Lista de Câmeras</span>
+        <span style="font-size:12px;color:var(--text-muted);font-weight:400;">
+            {{ cameras|length }} câmera(s) · TCP:554 + ICMP
+        </span>
+    </div>
+
+    {% if cameras %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>Câmera</th>
+                    <th>Localização</th>
+                    <th>Status</th>
+                    <th>Última Verificação</th>
+                    <th>RTT / Latência</th>
+                    <th>Sonda</th>
+                    <th>Offline Desde</th>
+                    <th>Falhas</th>
+                    <th>Detalhe</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for cam in cameras %}
+                <tr>
+                    <td>
+                        <a href="/camera/{{ cam.id }}" class="cam-name">{{ cam.name }}</a>
+                        <div class="cam-host">{{ cam.host }}</div>
+                        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+                            Portas: {{ cam.ports_json | parse_ports }}
+                        </div>
+                    </td>
+                    <td style="color:var(--text-secondary);font-size:13px;">{{ cam.location or '—' }}</td>
+                    <td>
+                        {% set st = cam.last_status or 'UNKNOWN' %}
+                        <span class="badge {{ st | status_badge }}">
+                            {% if st == 'OFFLINE' %}<span class="dot dot-fail pulse"
+                                style="display:inline-block;margin-right:3px;"></span>{% endif %}
+                            {{ st }}
+                        </span>
+                    </td>
+                    <td style="font-size:12.5px;color:var(--text-secondary);">{{ cam.last_check_ts | fmt_ts }}</td>
+                    <td>
+                        {% if cam.last_rtt_ms %}
+                        <span class="rtt">
+                            {% if cam.last_rtt_ms < 100 %}🟢{% elif cam.last_rtt_ms < 300 %}🟡{% else %}🔴{% endif %}
+                                {{ "%.1f" |format(cam.last_rtt_ms) }} ms </span>
+                                {% else %}
+                                <span style="color:var(--text-muted);">—</span>
+                                {% endif %}
+                    </td>
+                    <td style="font-size:12px;color:var(--text-secondary);">{{ cam.last_method or '—' }}</td>
+                    <td style="font-size:12.5px;color:var(--offline);">
+                        {% if cam.offline_since %}
+                        {{ cam.offline_since | fmt_ts }}<br />
+                        <span style="font-family:'JetBrains Mono',monospace;font-size:11px;">
+                            {{ cam.offline_since | fmt_duration }}
+                        </span>
+                        {% else %}
+                        <span style="color:var(--text-muted);">—</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if cam.consecutive_failures and cam.consecutive_failures > 0 %}
+                        <span style="color:var(--offline);font-family:'JetBrains Mono',monospace;font-size:12px;">🔴 {{
+                            cam.consecutive_failures }}</span>
+                        {% else %}
+                        <span style="color:var(--text-muted);font-size:12px;">—</span>
+                        {% endif %}
+                    </td>
+                    <td style="font-size:11.5px;color:var(--text-muted);max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                        title="{{ cam.last_detail }}">
+                        {{ cam.last_detail or '—' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <div class="empty-icon">📷</div>
+        <p>Nenhuma câmera habilitada. Configure o <code>config.yaml</code>.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+    
+    
+    
+    const MARKERS = {{ markers_json | safe }};
+
+    const map = L.map('map', {
+        center: [-2.53, -44.3],
+        zoom: 12,
+        zoomControl: true,
+        attributionControl: false,
+    });
+
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+    }).addTo(map);
+
+    const statusColor = {
+        'ONLINE': '#3fb950',
+        'OFFLINE': '#f85149',
+        'UNKNOWN': '#d29922',
+    };
+
+    MARKERS.forEach(function (cam) {
+        const color = statusColor[cam.status] || '#d29922';
+        const cls = cam.status.toLowerCase();
+        const rttStr = cam.rtt ? cam.rtt.toFixed(1) + ' ms' : '—';
+
+        const icon = L.divIcon({
+            className: '',
+            html: `<div class="cam-marker ${cls}" style="width:34px;height:34px;position:relative;">📷</div>`,
+            iconSize: [34, 34],
+            iconAnchor: [17, 34],
+            popupAnchor: [0, -36],
+        });
+
+        const popupHtml = `
+    <div class="popup-title">📷 ${cam.name}</div>
+    <div class="popup-row">🌐 Host: <code style="font-size:11px;">${cam.host}</code></div>
+    <div class="popup-row">📍 ${cam.location}</div>
+    <div class="popup-row">
+      Status:&nbsp;
+      <span style="color:${color};font-weight:700;">${cam.status}</span>
+      &nbsp;|&nbsp;RTT: ${rttStr}
+    </div>
+    <a class="popup-link" href="/camera/${cam.id}">Ver detalhes →</a>
+  `;
+
+        L.marker([cam.lat, cam.lng], { icon })
+            .addTo(map)
+            .bindPopup(popupHtml, { maxWidth: 260 });
+    });
+
+    
+    if (MARKERS.length > 0) {
+        const bounds = L.latLngBounds(MARKERS.map(m => [m.lat, m.lng]));
+        map.fitBounds(bounds, { padding: [60, 60] });
+    }
+</script>
+{% endblock %}

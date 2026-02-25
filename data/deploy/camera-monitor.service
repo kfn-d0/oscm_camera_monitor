@@ -1,0 +1,18 @@
+[Unit]
+Description=Camera Monitor - IP Camera Availability Monitor
+After=network.target
+
+[Service]
+Type=simple
+User=centos
+# Ajuste o caminho abaixo para o diretório onde o projeto foi clonado
+WorkingDirectory=/home/centos/CAMERA_MONITOR
+# Ajuste o caminho para o binário do python
+ExecStart=/usr/bin/python3 -m camera_monitor --config data/config.yaml
+Restart=always
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

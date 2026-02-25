@@ -1,0 +1,268 @@
+{% extends "base.html" %}
+
+{% block title %}Configurações – Camera Monitor{% endblock %}
+{% block page_title %}⚙️ Configurações do Sistema{% endblock %}
+
+{% block extra_head %}
+<style>
+    .settings-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .settings-section {
+        margin-bottom: 24px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: var(--text-secondary);
+        margin-bottom: 8px;
+    }
+
+    input[type="text"],
+    textarea {
+        width: 100%;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 10px 14px;
+        color: var(--text-primary);
+        font-size: 14px;
+        font-family: inherit;
+        transition: border-color .2s;
+    }
+
+    input[type="text"]:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    textarea {
+        min-height: 100px;
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        line-height: 1.5;
+        resize: vertical;
+    }
+
+    .hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 6px;
+    }
+
+    .hint code {
+        background: rgba(255, 255, 255, 0.05);
+        padding: 1px 4px;
+        border-radius: 3px;
+        color: var(--accent-hover);
+    }
+
+    .alert {
+        padding: 12px 16px;
+        border-radius: var(--radius-sm);
+        font-size: 13px;
+        margin-bottom: 20px;
+    }
+
+    .alert-success {
+        background: var(--online-bg);
+        border: 1px solid var(--online);
+        color: var(--online);
+    }
+
+    .alert-error {
+        background: var(--offline-bg);
+        border: 1px solid var(--offline);
+        color: var(--offline);
+    }
+
+    .btn-save {
+        padding: 12px 30px;
+        background: var(--accent);
+        color: white;
+        border: none;
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        cursor: pointer;
+        transition: opacity .2s;
+    }
+
+    .btn-save:hover {
+        opacity: 0.9;
+    }
+
+    .card-footer {
+        padding: 16px 20px;
+        background: rgba(0, 0, 0, 0.1);
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: flex-end;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="settings-container">
+
+    {% if success %}
+    <div class="alert alert-success">
+        ✅ {{ success }}
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        ❌ {{ error }}
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            📱 Configuração do Telegram
+        </div>
+        <form method="post" action="/settings">
+            <div class="card-body">
+                <div class="settings-section">
+                    <div class="form-group">
+                        <label for="bot_token">Token do Bot (HTTP API)</label>
+                        <input type="text" id="bot_token" name="bot_token" value="{{ cfg.telegram_bot_token }}"
+                            placeholder="Ex: 123456789:ABCdef... ">
+                        <div class="hint">Obtenha o token criando um bot com o <code>@BotFather</code> no Telegram.
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="chat_id">ID do Chat / Canal</label>
+                        <input type="text" id="chat_id" name="chat_id" value="{{ cfg.telegram_chat_id }}"
+                            placeholder="Ex: -100123456789">
+                        <div class="hint">ID do grupo ou canal onde as notificações serão enviadas.</div>
+                    </div>
+                </div>
+
+                <div class="settings-section" style="border-top: 1px solid var(--border); padding-top: 20px;">
+                    <div class="form-group">
+                        <label for="fmt_offline">Formato da Mensagem: Câmera OFFLINE</label>
+                        <textarea id="fmt_offline" name="fmt_offline">{{ cfg.telegram_msg_format_offline }}</textarea>
+                        <div class="hint">
+                            Tags disponíveis: <code>{name}</code>, <code>{host}</code>, <code>{timestamp}</code>,
+                            <code>{detail}</code>, <code>{location}</code>.<br />
+                            Suporta HTML básico do Telegram (&lt;b&gt;, &lt;i&gt;, &lt;code&gt;, &lt;pre&gt;).
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="fmt_online">Formato da Mensagem: Câmera ONLINE (Recuperada)</label>
+                        <textarea id="fmt_online" name="fmt_online">{{ cfg.telegram_msg_format_online }}</textarea>
+                        <div class="hint">
+                            Tags disponíveis: <code>{name}</code>, <code>{host}</code>, <code>{timestamp}</code>,
+                            <code>{duration_str}</code>.<br />
+                            Suporta HTML básico do Telegram (&lt;b&gt;, &lt;i&gt;, &lt;code&gt;, &lt;pre&gt;).
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
+                <div>
+                    <button type="button" class="btn-save"
+                        style="background: var(--accent-hover); padding: 8px 16px; font-size: 12px;"
+                        onclick="testTelegram()">🔔 Enviar Teste</button>
+                    <div id="telegram_result" class="hint"
+                        style="display: inline-block; margin-left: 10px; margin-top: 0;"></div>
+                </div>
+                <button type="submit" class="btn-save">💾 Salvar Configurações</button>
+            </div>
+        </form>
+    </div>
+
+    <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+            🛠️ Ferramentas de Diagnóstico
+        </div>
+        <div class="card-body">
+            <div class="settings-section">
+                <div class="form-group">
+                    <label for="zabbix_ip">Testar Conectividade com Servidor Externo (Zabbix/Outros)</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="zabbix_ip" name="zabbix_ip" placeholder="Ex: 10.0.2.2 ou 192.168.1.50">
+                        <button type="button" class="btn-save"
+                            style="background: var(--accent-hover); white-space: nowrap;" onclick="testZabbix()">Testar
+                            IP</button>
+                    </div>
+                    <div id="zabbix_result" class="hint"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    async function testZabbix() {
+        const ip = document.getElementById('zabbix_ip').value;
+        const resDiv = document.getElementById('zabbix_result');
+        if (!ip) {
+            resDiv.innerHTML = '<span style="color: var(--offline)">Insira um IP para testar.</span>';
+            return;
+        }
+        resDiv.innerHTML = 'Testando...';
+        try {
+            const formData = new FormData();
+            formData.append('ip', ip);
+            const resp = await fetch('/settings/test-zabbix', {
+                method: 'POST',
+                body: formData
+            });
+            const data = await resp.json();
+            if (data.ok) {
+                resDiv.innerHTML = `<span style="color: var(--online)">✅ ${data.message}</span>`;
+            } else {
+                resDiv.innerHTML = `<span style="color: var(--offline)">❌ ${data.message}</span>`;
+            }
+        } catch (e) {
+            resDiv.innerHTML = `<span style="color: var(--offline)">❌ Erro na requisição: ${e}</span>`;
+        }
+    }
+
+    async function testTelegram() {
+        const token = document.getElementById('bot_token').value;
+        const chatid = document.getElementById('chat_id').value;
+        const resDiv = document.getElementById('telegram_result');
+
+        resDiv.innerHTML = 'Enviando...';
+        try {
+            const formData = new FormData();
+            formData.append('bot_token', token);
+            formData.append('chat_id', chatid);
+
+            const resp = await fetch('/settings/test-telegram', {
+                method: 'POST',
+                body: formData
+            });
+
+            if (!resp.ok) {
+                const text = await resp.text();
+                resDiv.innerHTML = `<span style="color: var(--offline)">❌ Erro no Servidor (${resp.status}): ${text.substring(0, 50)}</span>`;
+                return;
+            }
+
+            const data = await resp.json();
+            if (data.ok) {
+                resDiv.innerHTML = `<span style="color: var(--online)">✅ ${data.message}</span>`;
+            } else {
+                resDiv.innerHTML = `<span style="color: var(--offline)">❌ ${data.message || 'Erro desconhecido'}</span>`;
+            }
+        } catch (e) {
+            resDiv.innerHTML = `<span style="color: var(--offline)">❌ Erro na requisição: ${e}</span>`;
+        }
+    }
+</script>
+{% endblock %}

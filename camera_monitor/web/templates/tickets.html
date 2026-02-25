@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+
+{% block title %}Tickets – Camera Monitor{% endblock %}
+{% block page_title %}🎫 Tickets de Incidentes{% endblock %}
+
+{% block content %}
+
+<div class="card" style="margin-bottom:20px;">
+    <div class="card-body" style="padding:14px 20px;">
+        <div class="filter-row">
+            <span style="font-size:13px;color:var(--text-secondary);margin-right:4px;">Filtrar:</span>
+            <a href="/tickets" class="btn {% if not status_filter %}active{% endif %}" id="filter-all">Todos</a>
+            <a href="/tickets?status=OPEN" class="btn {% if status_filter == 'OPEN' %}active{% endif %}"
+                id="filter-open">
+                🚨 Abertos
+            </a>
+            <a href="/tickets?status=RESOLVED" class="btn {% if status_filter == 'RESOLVED' %}active{% endif %}"
+                id="filter-resolved">
+                ✅ Resolvidos
+            </a>
+        </div>
+    </div>
+</div>
+
+
+<div class="card">
+    <div class="card-header">
+        <span>
+            {% if status_filter == 'OPEN' %}🚨 Tickets Abertos
+            {% elif status_filter == 'RESOLVED' %}✅ Tickets Resolvidos
+            {% else %}📋 Todos os Tickets
+            {% endif %}
+        </span>
+        <span style="font-size:12px;color:var(--text-muted);font-weight:400;">
+            {{ tickets|length }} ticket(s)
+        </span>
+    </div>
+
+    {% if tickets %}
+    <div class="table-wrap">
+        <table>
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Câmera</th>
+                    <th>Localização</th>
+                    <th>Status</th>
+                    <th>Aberto em</th>
+                    <th>Fechado em</th>
+                    <th>Duração Offline</th>
+                    <th>Motivo</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td style="font-family:'JetBrains Mono',monospace;font-size:12px;color:var(--text-muted);">
+                        {{ ticket.id | ticket_code(ticket.opened_at) }}
+                    </td>
+                    <td>
+                        <a href="/camera/{{ ticket.camera_id }}" class="cam-name">
+                            {{ ticket.camera_name }}
+                        </a>
+                        <div class="cam-host">{{ ticket.host }}</div>
+                    </td>
+                    <td style="font-size:13px;color:var(--text-secondary);">
+                        {{ ticket.location or '—' }}
+                    </td>
+                    <td>
+                        <span class="badge {{ ticket.status | status_badge }}">
+                            {% if ticket.status == 'OPEN' %}<span class="dot dot-fail pulse"
+                                style="display:inline-block;margin-right:3px;"></span>{% endif %}
+                            {{ ticket.status }}
+                        </span>
+                    </td>
+                    <td style="font-size:12.5px;color:var(--text-secondary);">
+                        {{ ticket.opened_at | fmt_ts }}
+                    </td>
+                    <td style="font-size:12.5px;color:var(--text-secondary);">
+                        {{ ticket.closed_at | fmt_ts }}
+                    </td>
+                    <td>
+                        {% if ticket.status == 'RESOLVED' %}
+                        <span class="rtt">
+                            {{ ticket.opened_at | fmt_duration(ticket.closed_at) }}
+                        </span>
+                        {% elif ticket.status == 'OPEN' %}
+                        <span
+                            style="color:var(--offline);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">
+                            ⏱ {{ ticket.opened_at | fmt_duration }}
+                        </span>
+                        {% else %}—{% endif %}
+                    </td>
+                    <td style="font-size:12px;color:var(--text-muted);max-width:220px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;"
+                        title="{{ ticket.reason }}">
+                        {{ ticket.reason or '—' }}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+    <div class="empty">
+        <div class="empty-icon">🎉</div>
+        <p>Nenhum ticket encontrado para este filtro.</p>
+        {% if status_filter == 'OPEN' %}
+        <p style="font-size:13px;margin-top:8px;color:var(--online);">
+            ✅ Todas as câmeras estão online!
+        </p>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

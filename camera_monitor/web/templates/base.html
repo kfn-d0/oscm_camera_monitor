@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="robots" content="noindex, nofollow" />
+  <title>{% block title %}Camera Monitor{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap"
+    rel="stylesheet" />
+  <style>
+    
+    :root {
+      --bg-base: #0d1117;
+      --bg-card: #161b22;
+      --bg-card-hover: #1c2330;
+      --bg-input: #21262d;
+      --border: #30363d;
+      --border-subtle: #21262d;
+      --text-primary: #e6edf3;
+      --text-secondary: #8b949e;
+      --text-muted: #484f58;
+      --accent: #1f6feb;
+      --accent-hover: #388bfd;
+      --online: #3fb950;
+      --offline: #f85149;
+      --unknown: #d29922;
+      --online-bg: rgba(63, 185, 80, .12);
+      --offline-bg: rgba(248, 81, 73, .12);
+      --unknown-bg: rgba(210, 153, 34, .12);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 4px 24px rgba(0, 0, 0, .45);
+    }
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-base);
+      color: var(--text-primary);
+      min-height: 100vh;
+      line-height: 1.6;
+    }
+
+    a {
+      color: var(--accent-hover);
+      text-decoration: none;
+      transition: color .15s;
+    }
+
+    a:hover {
+      color: var(--text-primary);
+    }
+
+    
+    .layout {
+      display: flex;
+      min-height: 100vh;
+    }
+
+    
+    .sidebar {
+      width: 240px;
+      background: var(--bg-card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      top: 0;
+      left: 0;
+      bottom: 0;
+      z-index: 100;
+    }
+
+    .sidebar-logo {
+      padding: 24px 20px 16px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .sidebar-logo .logo-mark {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-icon {
+      width: 36px;
+      height: 36px;
+      background: linear-gradient(135deg, #1f6feb, #388bfd);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 18px;
+    }
+
+    .logo-text {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: -.3px;
+    }
+
+    .logo-text span {
+      color: var(--accent-hover);
+    }
+
+    .logo-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      padding-left: 46px;
+    }
+
+    .nav {
+      flex: 1;
+      padding: 12px 0;
+    }
+
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 20px;
+      color: var(--text-secondary);
+      font-size: 14px;
+      font-weight: 500;
+      transition: all .15s;
+      border-left: 3px solid transparent;
+    }
+
+    .nav-item:hover {
+      color: var(--text-primary);
+      background: var(--bg-card-hover);
+    }
+
+    .nav-item.active {
+      color: var(--accent-hover);
+      background: rgba(31, 111, 235, .1);
+      border-left-color: var(--accent-hover);
+    }
+
+    .nav-icon {
+      font-size: 16px;
+      width: 20px;
+      text-align: center;
+    }
+
+    .nav-label {
+      flex: 1;
+    }
+
+    .nav-badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 1px 7px;
+      border-radius: 10px;
+      background: var(--offline-bg);
+      color: var(--offline);
+    }
+
+    .sidebar-footer {
+      padding: 14px 20px;
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .topbar {
+      background: var(--bg-card);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 28px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+    }
+
+    .topbar-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+
+    .topbar-meta {
+      font-size: 12px;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .content {
+      padding: 28px;
+      flex: 1;
+      max-width: 1400px;
+    }
+
+    
+
+    
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 14px 20px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .card-body {
+      padding: 20px;
+    }
+
+    
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      transition: border-color .2s, transform .2s;
+    }
+
+    .stat-card:hover {
+      border-color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    .stat-icon {
+      font-size: 28px;
+      width: 52px;
+      height: 52px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .stat-icon.total {
+      background: rgba(31, 111, 235, .15);
+    }
+
+    .stat-icon.online {
+      background: var(--online-bg);
+    }
+
+    .stat-icon.offline {
+      background: var(--offline-bg);
+    }
+
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+      line-height: 1;
+      font-family: 'JetBrains Mono', monospace;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 4px;
+    }
+
+    
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 12px;
+      font-weight: 600;
+      padding: 3px 10px;
+      border-radius: 20px;
+      letter-spacing: .3px;
+    }
+
+    .badge::before {
+      content: '●';
+      font-size: 8px;
+    }
+
+    .badge-online {
+      background: var(--online-bg);
+      color: var(--online);
+    }
+
+    .badge-offline {
+      background: var(--offline-bg);
+      color: var(--offline);
+    }
+
+    .badge-unknown {
+      background: var(--unknown-bg);
+      color: var(--unknown);
+    }
+
+    
+    .table-wrap {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13.5px;
+    }
+
+    thead th {
+      text-align: left;
+      padding: 10px 14px;
+      color: var(--text-secondary);
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: .8px;
+      border-bottom: 1px solid var(--border);
+      white-space: nowrap;
+    }
+
+    tbody tr {
+      border-bottom: 1px solid var(--border-subtle);
+      transition: background .12s;
+    }
+
+    tbody tr:last-child {
+      border-bottom: none;
+    }
+
+    tbody tr:hover {
+      background: var(--bg-card-hover);
+    }
+
+    td {
+      padding: 11px 14px;
+      vertical-align: middle;
+    }
+
+    
+    .rtt {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      background: var(--bg-input);
+      padding: 2px 8px;
+      border-radius: 4px;
+      color: var(--text-secondary);
+    }
+
+    
+    .filter-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 7px 14px;
+      border-radius: var(--radius-sm);
+      font-size: 13px;
+      font-weight: 500;
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--bg-input);
+      color: var(--text-secondary);
+      text-decoration: none;
+      transition: all .15s;
+    }
+
+    .btn:hover {
+      color: var(--text-primary);
+      border-color: var(--accent);
+    }
+
+    .btn.active {
+      background: rgba(31, 111, 235, .15);
+      border-color: var(--accent);
+      color: var(--accent-hover);
+    }
+
+    
+    .cam-name {
+      font-weight: 600;
+      color: var(--text-primary);
+      transition: color .15s;
+    }
+
+    .cam-name:hover {
+      color: var(--accent-hover);
+    }
+
+    .cam-host {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-secondary);
+      margin-top: 2px;
+    }
+
+    
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-ok {
+      background: var(--online);
+    }
+
+    .dot-fail {
+      background: var(--offline);
+    }
+
+    
+    @keyframes pulse {
+
+      0%,
+      100% {
+        opacity: 1;
+        transform: scale(1);
+      }
+
+      50% {
+        opacity: .5;
+        transform: scale(1.4);
+      }
+    }
+
+    .pulse {
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+
+    
+    .detail-grid {
+      display: grid;
+      grid-template-columns: 280px 1fr;
+      gap: 20px;
+    }
+
+    @media (max-width: 900px) {
+      .detail-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar {
+        display: none;
+      }
+
+      .main {
+        margin-left: 0;
+      }
+    }
+
+    .info-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--border-subtle);
+      font-size: 13.5px;
+    }
+
+    .info-row:last-child {
+      border-bottom: none;
+    }
+
+    .info-label {
+      color: var(--text-secondary);
+    }
+
+    .info-value {
+      font-weight: 500;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12.5px;
+    }
+
+    
+    .empty {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--text-muted);
+    }
+
+    .empty-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+
+    
+    ::-webkit-scrollbar {
+      width: 6px;
+      height: 6px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: var(--bg-base);
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 3px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: var(--text-muted);
+    }
+
+    
+    .refresh-bar {
+      position: fixed;
+      bottom: 0;
+      left: 240px;
+      right: 0;
+      background: var(--bg-card);
+      border-top: 1px solid var(--border);
+      padding: 6px 28px;
+      font-size: 11px;
+      color: var(--text-muted);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      z-index: 50;
+    }
+
+    .refresh-bar span {
+      color: var(--text-secondary);
+      font-family: 'JetBrains Mono', monospace;
+    }
+  </style>
+  {% block extra_head %}{% endblock %}
+</head>
+
+<body>
+  <div class="layout">
+
+    
+    <aside class="sidebar">
+      <div class="sidebar-logo">
+        <div class="logo-mark">
+          <div class="logo-icon">📷</div>
+          <div class="logo-text">Monitor<span>Monitor</span></div>
+        </div>
+        <div class="logo-sub">Camera Monitoring</div>
+      </div>
+
+      <nav class="nav">
+        <a href="/" class="nav-item {% if active_page == 'overview' %}active{% endif %}" id="nav-overview">
+          <span class="nav-icon">🖥️</span>
+          <span class="nav-label">Visão Geral</span>
+        </a>
+        <a href="/tickets" class="nav-item {% if active_page == 'tickets' %}active{% endif %}" id="nav-tickets">
+          <span class="nav-icon">🎫</span>
+          <span class="nav-label">Tickets</span>
+        </a>
+        <a href="/cameras/add" class="nav-item {% if active_page == 'add_camera' %}active{% endif %}" id="nav-add">
+          <span class="nav-icon">➕</span>
+          <span class="nav-label">Adicionar Câmera</span>
+        </a>
+        <a href="/settings" class="nav-item {% if active_page == 'settings' %}active{% endif %}" id="nav-settings">
+          <span class="nav-icon">⚙️</span>
+          <span class="nav-label">Configurações</span>
+        </a>
+        <a href="/status" class="nav-item {% if active_page == 'status' %}active{% endif %}" id="nav-status">
+          <span class="nav-icon">📊</span>
+          <span class="nav-label">Status Sistema</span>
+        </a>
+      </nav>
+
+      <div class="sidebar-footer">
+        <div style="margin-bottom:12px; padding-bottom:12px; border-bottom:1px solid rgba(255,255,255,0.05);">
+          <a href="/logout"
+            style="color:#ef4444;text-decoration:none;font-size:13px;font-weight:600;display:flex;align-items:center;gap:8px;">
+            <span>🚪</span> Sair do Sistema
+          </a>
+        </div>
+        Camera Monitor v1.0.0<br />
+        São Luís – MA
+      </div>
+    </aside>
+
+    
+    <div class="main">
+      <header class="topbar">
+        <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
+        <span class="topbar-meta" id="last-refresh">Atualizado: {{ now() }}</span>
+      </header>
+
+      <div class="content">
+        {% block content %}{% endblock %}
+      </div>
+    </div>
+
+    
+    <div class="refresh-bar">
+      ♻️ Atualização automática em <span id="countdown">30</span>s
+      &nbsp;·&nbsp; Leitura somente &nbsp;·&nbsp; Sem credenciais ou tokens exibidos nesta interface
+    </div>
+  </div>
+
+  <script>
+    
+    let countdown = 30;
+    const el = document.getElementById('countdown');
+    setInterval(() => {
+      countdown--;
+      if (el) el.textContent = countdown;
+      if (countdown <= 0) window.location.reload();
+    }, 1000);
+  </script>
+  {% block extra_script %}{% endblock %}
+</body>
+
+</html>

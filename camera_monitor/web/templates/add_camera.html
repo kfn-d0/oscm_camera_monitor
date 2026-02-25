@@ -1,0 +1,533 @@
+{% extends "base.html" %}
+
+{% block title %}Adicionar Câmera – Camera Monitor{% endblock %}
+{% block page_title %}➕ Adicionar Host / Câmera{% endblock %}
+
+{% block extra_head %}
+
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<style>
+    .form-card {
+        max-width: 860px;
+        margin: 0 auto;
+    }
+
+    .form-section {
+        padding: 24px 24px 8px;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .form-section:last-child {
+        border-bottom: none;
+    }
+
+    .form-section-title {
+        font-size: 12px;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .8px;
+        color: var(--text-muted);
+        margin-bottom: 18px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-grid-3 {
+        display: grid;
+        grid-template-columns: 1fr 1fr 1fr;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .form-group.full {
+        grid-column: 1 / -1;
+    }
+
+    label {
+        font-size: 12.5px;
+        font-weight: 600;
+        color: var(--text-secondary);
+    }
+
+    label .required {
+        color: var(--offline);
+        margin-left: 3px;
+    }
+
+    label .hint {
+        font-weight: 400;
+        color: var(--text-muted);
+        font-size: 11px;
+        margin-left: 6px;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea {
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 9px 12px;
+        color: var(--text-primary);
+        font-size: 13.5px;
+        font-family: inherit;
+        transition: border-color .2s, box-shadow .2s;
+        width: 100%;
+        box-sizing: border-box;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus {
+        outline: none;
+        border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(31, 111, 235, .15);
+    }
+
+    input.error {
+        border-color: var(--offline) !important;
+    }
+
+    .field-hint {
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-top: 2px;
+    }
+
+    
+    #map-picker {
+        height: 300px;
+        width: 100%;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: #1a1f27;
+    }
+
+    .leaflet-tile {
+        filter: brightness(0.7) invert(1) contrast(1.1) hue-rotate(200deg) saturate(0.4) brightness(0.7);
+    }
+
+    .leaflet-container {
+        background: #1a1f27;
+    }
+
+    .map-hint {
+        font-size: 11.5px;
+        color: var(--text-muted);
+        margin-top: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+    }
+
+    
+    .toggle-row {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 8px 0;
+    }
+
+    .toggle {
+        position: relative;
+        display: inline-block;
+        width: 42px;
+        height: 24px;
+    }
+
+    .toggle input {
+        opacity: 0;
+        width: 0;
+        height: 0;
+    }
+
+    .slider {
+        position: absolute;
+        inset: 0;
+        background: var(--bg-input);
+        border: 1px solid var(--border);
+        border-radius: 24px;
+        cursor: pointer;
+        transition: .2s;
+    }
+
+    .slider:before {
+        content: '';
+        position: absolute;
+        left: 3px;
+        bottom: 3px;
+        width: 16px;
+        height: 16px;
+        background: var(--text-muted);
+        border-radius: 50%;
+        transition: .2s;
+    }
+
+    input:checked+.slider {
+        background: rgba(63, 185, 80, .25);
+        border-color: var(--online);
+    }
+
+    input:checked+.slider:before {
+        transform: translateX(18px);
+        background: var(--online);
+    }
+
+    .toggle-label {
+        font-size: 13.5px;
+        color: var(--text-primary);
+    }
+
+    
+    .form-actions {
+        padding: 20px 24px;
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        border-top: 1px solid var(--border);
+    }
+
+    .btn-submit {
+        padding: 11px 28px;
+        background: linear-gradient(135deg, var(--accent), var(--accent-hover));
+        border: none;
+        border-radius: var(--radius-sm);
+        color: #fff;
+        font-size: 14px;
+        font-weight: 700;
+        cursor: pointer;
+        transition: all .2s;
+        font-family: inherit;
+    }
+
+    .btn-submit:hover {
+        opacity: .9;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 14px rgba(31, 111, 235, .4);
+    }
+
+    .btn-cancel {
+        padding: 11px 20px;
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        color: var(--text-secondary);
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+        transition: all .2s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-cancel:hover {
+        border-color: var(--text-secondary);
+        color: var(--text-primary);
+    }
+
+    
+    .alert {
+        border-radius: var(--radius-sm);
+        padding: 12px 16px;
+        font-size: 13px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+        line-height: 1.5;
+    }
+
+    .alert-success {
+        background: var(--online-bg);
+        border: 1px solid var(--online);
+        color: var(--online);
+    }
+
+    .alert-error {
+        background: var(--offline-bg);
+        border: 1px solid var(--offline);
+        color: var(--offline);
+    }
+
+    .id-preview {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        color: var(--accent-hover);
+        margin-top: 4px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="form-card">
+
+    {% if success %}
+    <div class="alert alert-success">
+        ✅ <div>
+            <strong>Câmera {{ success.action }} com sucesso!</strong><br />
+            <span style="font-size:12px;">
+                <strong>{{ success.name }}</strong> ({{ success.host }}) foi {{ success.action }} e será monitorada no
+                próximo ciclo.
+                O <code>config.yaml</code> foi sincronizado.
+            </span>
+            <br /><a href="/camera/{{ success.id }}"
+                style="color:var(--online);font-size:12px;margin-top:4px;display:inline-block;">
+                → Ver painel da câmera
+            </a>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if error %}
+    <div class="alert alert-error">
+        ❌ <div><strong>Erro ao processar:</strong><br />{{ error }}</div>
+    </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-header">
+            {% if form.is_edit %}✏️ Editar Câmera: {{ form.name }}{% else %}➕ Nova Câmera / Host{% endif %}
+        </div>
+
+        <form method="post" action="/cameras/add" id="add-form">
+            <input type="hidden" name="is_edit" value="{{ 'True' if form.is_edit else 'False' }}">
+            <input type="hidden" name="old_id" value="{{ form.id or form.cam_id or '' }}">
+
+            <div class="form-section">
+                <div class="form-section-title">🏷️ Identificação</div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="name">Nome da câmera<span class="required">*</span></label>
+                        <input type="text" id="name" name="name" placeholder="Ex: Câmera Praça São Luís"
+                            value="{{ form.name or '' }}" required oninput="updateID()" />
+                    </div>
+                    <div class="form-group">
+                        <label for="cam_id">
+                            ID único<span class="required">*</span>
+                            <span class="hint">(gerado automaticamente: cam001-icmp-host)</span>
+                        </label>
+                        <input type="text" id="cam_id" name="cam_id" placeholder="cam-exemplo-01"
+                            value="{{ form.id or form.cam_id or '' }}" required readonly
+                            style="background:var(--bg-base);cursor:not-allowed;" />
+                        <div class="id-preview" id="id-preview"></div>
+                    </div>
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label for="host">Host / Endereço IP<span class="required">*</span></label>
+                        <input type="text" id="host" name="host" placeholder="Ex: 10.10.16.100"
+                            value="{{ form.host or '' }}" required oninput="updateID()" />
+                    </div>
+                    <div class="form-group" style="margin-top: 10px; grid-column: 1 / -1;">
+                        <label for="location">Localização<span class="hint">(descrição do local)</span></label>
+                        <input type="text" id="location" name="location" placeholder="Ex: Praça São Luís – São Luís"
+                            value="{{ form.location or '' }}" />
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="form-section">
+                <div class="form-section-title">🔌 Configuração de Rede</div>
+                <div class="form-grid-3">
+                    <div class="form-group">
+                        <label for="ports">Portas TCP monitoradas<span class="required">*</span></label>
+                        <input type="text" id="ports" name="ports" placeholder="554"
+                            value="{{ form.ports or '554' }}" />
+                        <div class="field-hint">Separadas por vírgula. Ex: 554, 80</div>
+                    </div>
+                    <div class="form-group" style="grid-column: 2 / 4;">
+                        <label>&nbsp;</label>
+                        <div class="toggle-row" style="margin-top:4px;">
+                            <label class="toggle">
+                                <input type="checkbox" id="icmp_only" name="icmp_only" {% if form.icmp_only %}checked{%
+                                    endif %} onchange="updateID()" />
+                                <span class="slider"></span>
+                            </label>
+                            <span class="toggle-label">Monitorar apenas ICMP (Ping)</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-section">
+                <div class="form-section-title">🗺️ Posição no Mapa <span
+                        style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;">(opcional – clique
+                        no mapa)</span></div>
+                <div class="form-grid" style="margin-bottom:12px;">
+                    <div class="form-group">
+                        <label for="lat">Latitude</label>
+                        <input type="number" id="lat" name="lat" placeholder="-2.5300" value="{{ form.lat or '' }}"
+                            step="any" />
+                    </div>
+                    <div class="form-group">
+                        <label for="lng">Longitude</label>
+                        <input type="number" id="lng" name="lng" placeholder="-44.3000" value="{{ form.lng or '' }}"
+                            step="any" />
+                    </div>
+                </div>
+                <div id="map-picker"></div>
+                <div class="map-hint">📍 Clique no mapa para definir a posição. Os campos serão preenchidos
+                    automaticamente.</div>
+            </div>
+
+            
+            <div class="form-actions">
+                <button type="submit" class="btn-submit">
+                    {% if form.is_edit %}💾 Salvar Alterações{% else %}💾 Adicionar Câmera{% endif %}
+                </button>
+                <a href="/cameras/add" class="btn-cancel">✕ Limpar / Cancelar</a>
+                <span style="font-size:12px;color:var(--text-muted);margin-left:auto;">
+                    📄 O <code>config.yaml</code> será sincronizado automaticamente
+                </span>
+            </div>
+
+        </form>
+    </div>
+
+    <div class="card" style="margin-top:20px;">
+        <div class="card-header">
+            📋 Gerenciar Câmeras Cadastradas ({{ existing_cameras | length }})
+        </div>
+        {% if existing_cameras %}
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nome</th>
+                        <th>Host</th>
+                        <th>Ports</th>
+                        <th>Modo</th>
+                        <th>Ações</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for cam in existing_cameras %}
+                    <tr>
+                        <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">{{
+                            cam.id }}</td>
+                        <td><a href="/camera/{{ cam.id }}" class="cam-name">{{ cam.name }}</a></td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">{{ cam.host }}</td>
+                        <td style="font-size:12px;color:var(--text-secondary);">
+                            {% if cam.icmp_only %}
+                            <span style="color:var(--text-muted);">—</span>
+                            {% else %}
+                            {{ cam.ports_json | parse_ports }}
+                            {% endif %}
+                        </td>
+                        <td style="font-size:12px;">
+                            {% if cam.icmp_only %}
+                            <span class="badge badge-unknown" style="font-size:10px;">ICMP Only</span>
+                            {% else %}
+                            <span class="badge badge-online" style="font-size:10px;">TCP+ICMP</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div style="display:flex;gap:8px;">
+                                <a href="/cameras/add?edit={{ cam.id }}" class="btn"
+                                    style="padding:4px 8px;font-size:11px;">✏️ Editar</a>
+                                <form method="post" action="/cameras/delete"
+                                    onsubmit="return confirm('Tem certeza que deseja excluir esta câmera?')">
+                                    <input type="hidden" name="cam_id" value="{{ cam.id }}">
+                                    <button type="submit" class="btn"
+                                        style="padding:4px 8px;font-size:11px;color:var(--offline);border-color:var(--offline-bg);">🗑️
+                                        Excluir</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <div class="empty">
+            <p>Nenhuma câmera cadastrada ainda.</p>
+        </div>
+        {% endif %}
+    </div>
+
+</div>
+{% endblock %}
+
+{% block extra_script %}
+<script>
+    const nextNum = {{ next_num | default (1) }};
+    const isEdit = {{ 'true' if form.is_edit else 'false' }};
+    const initialID = "{{ form.id or '' }}";
+
+    function updateID() {
+        const host = document.getElementById('host').value;
+        const idField = document.getElementById('cam_id');
+        const preview = document.getElementById('id-preview');
+
+        if (!idField) return;
+
+        let numStr = String(nextNum).padStart(3, '0');
+        if (isEdit && initialID.startsWith('cam')) {
+            const match = initialID.match(/^cam(\d+)/);
+            if (match) numStr = match[1];
+        }
+
+        const hostSlug = host.trim().replace(/\s+/g, '-').replace(/\./g, '-').toLowerCase() || '0-0-0-0';
+        let newID = `cam${numStr}-icmp-${hostSlug}`;
+
+        idField.value = newID;
+        if (preview) preview.textContent = '→ ID: ' + idField.value;
+    }
+
+    const map = L.map('map-picker', {
+        center: [-2.5300, -44.3000],
+        zoom: 14,
+        attributionControl: false,
+    });
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', { maxZoom: 19 }).addTo(map);
+
+    const latInput = document.getElementById('lat');
+    const lngInput = document.getElementById('lng');
+    let marker = null;
+
+    function placeMarker(lat, lng) {
+        if (marker) map.removeLayer(marker);
+        marker = L.circleMarker([lat, lng], {
+            radius: 10, color: '#1f6feb', fillColor: '#1f6feb', fillOpacity: 0.5, weight: 2
+        }).addTo(map);
+        latInput.value = lat.toFixed(7);
+        lngInput.value = lng.toFixed(7);
+    }
+
+    if (latInput.value && lngInput.value) {
+        placeMarker(parseFloat(latInput.value), parseFloat(lngInput.value));
+        map.setView([parseFloat(latInput.value), parseFloat(lngInput.value)], 16);
+    }
+
+    map.on('click', function (e) {
+        placeMarker(e.latlng.lat, e.latlng.lng);
+    });
+
+    [latInput, lngInput].forEach(function (inp) {
+        inp.addEventListener('input', function () {
+            const lat = parseFloat(latInput.value);
+            const lng = parseFloat(lngInput.value);
+            if (!isNaN(lat) && !isNaN(lng)) {
+                placeMarker(lat, lng);
+                map.setView([lat, lng], 15);
+            }
+        });
+    });
+</script>
+{% endblock %}
