@@ -2,6 +2,8 @@
 
 Monitor de disponibilidade de câmeras IP com dashboard moderno, sistema de chamados, notificações (Telegram) e gerenciamento web.
 
+<img width="1914" height="910" alt="image" src="https://github.com/user-attachments/assets/5222ec5e-b912-4615-9ca8-02a71d43e9a6" />
+
 
 ## Principais Funcionalidades
 
@@ -154,5 +156,6 @@ camera_monitor/
 | **WAL mode** | `PRAGMA journal_mode=WAL` | Permite leituras e escritas simultâneas (web lê enquanto monitor escreve) sem lock total |
 
 ---
+
 
 
