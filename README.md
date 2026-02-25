@@ -1,6 +1,6 @@
 # Camera Monitor 
 
-Monitor de disponibilidade de câmeras IP com dashboard moderno, notificações via Telegram e gerenciamento via interface web.
+Monitor de disponibilidade de câmeras IP com dashboard moderno, sistema de chamados, notificações (Telegram) e gerenciamento web.
 
 
 ## Principais Funcionalidades
@@ -154,4 +154,5 @@ camera_monitor/
 | **WAL mode** | `PRAGMA journal_mode=WAL` | Permite leituras e escritas simultâneas (web lê enquanto monitor escreve) sem lock total |
 
 ---
+
 
