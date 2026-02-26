@@ -10,7 +10,7 @@ Monitor de disponibilidade de câmeras IP com dashboard moderno, sistema de cham
 - **Monitoramento Inteligente**: Sonda dupla (TCP + ICMP) para diagnóstico preciso. Identifica se o problema é na rede ou no serviço de vídeo.
 - **Modo ICMP-Only**: Opção de monitorar apenas via Ping para dispositivos que não expõem RTSP.
 - **ID Único Automático**: Padrão organizacional `camXXX-icmp-host` gerado automaticamente no cadastro.
-- **Dashboard Moderno**: Interface web rápida e intuitiva para visualização de status e histórico.
+- **Dashboard Moderno**: Interface web rápida e intuitiva para visualização de status graficos e histórico, com tema claro/escuro.
 - **Gerenciamento de Hosts**: Adicione, edite ou exclua câmeras diretamente pela interface web.
 - **Ferramentas de Teste**: Botões integrados para validar conectividade Zabbix e notificações Telegram instantaneamente.
 - **Alertas via Telegram**: Notificações automáticas com formato editável e suporte a tags HTML.
@@ -156,6 +156,7 @@ camera_monitor/
 | **WAL mode** | `PRAGMA journal_mode=WAL` | Permite leituras e escritas simultâneas (web lê enquanto monitor escreve) sem lock total |
 
 ---
+
 
 
 
