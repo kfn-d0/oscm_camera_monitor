@@ -125,7 +125,7 @@ Zabbix UI → Data collection → Templates → Import
 | Trigger | Severidade | Condição |
 |---|---|---|
 | `Camera Monitor: Serviço indisponível` | HIGH | Ping sem resposta por 3 min |
-| `Camera Monitor: N cãmera(s) offline` | HIGH | `offline_cameras > 0` |
+| `Camera Monitor: N camera(s) offline` | HIGH | `offline_cameras > 0` |
 | `Câmera {NOME}: OFFLINE` | HIGH | `status_code = 0` |
 | `Câmera {NOME}: Latência elevada (> {$CM_RTT_WARN}ms)` | WARNING | RTT acima do threshold |
 
@@ -156,6 +156,7 @@ camera_monitor/
 | **WAL mode** | `PRAGMA journal_mode=WAL` | Permite leituras e escritas simultâneas (web lê enquanto monitor escreve) sem lock total |
 
 ---
+
 
 
 
