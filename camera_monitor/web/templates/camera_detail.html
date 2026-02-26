@@ -316,6 +316,78 @@
 
 {% block extra_script %}
 <script>
+  (function () {
+    // Dados de checks vindos do backend (mais recentes primeiro)
+    const rawChecks = {{ checks|tojson|safe }};
+    if (!rawChecks || !rawChecks.length) return;
 
+    // Ordena do mais antigo para o mais novo
+    const checks = rawChecks.slice().reverse();
+
+    const labels = [];
+    const rtt = [];
+    const loss = [];
+
+    for (const c of checks) {
+      const tsLabel = (c.ts || '').replace('T', ' ').slice(0, 19);
+      labels.push(tsLabel);
+      // RTT em ms (0 para falha ou sem valor)
+      rtt.push(typeof c.rtt_ms === 'number' ? c.rtt_ms : 0);
+      // Perda: 0 para ok, 1 para falha
+      loss.push(c.ok ? 0 : 1);
+    }
+
+    // Cria container de gráfico antes da tabela de últimas verificações
+    const cards = document.querySelectorAll('.card');
+    const tableCard = cards[cards.length - 1];
+    if (!tableCard) return;
+
+    const chartWrapper = document.createElement('div');
+    chartWrapper.style.padding = '18px 20px 6px';
+    chartWrapper.style.borderBottom = '1px solid var(--border-subtle)';
+    chartWrapper.innerHTML = `
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <div style="font-size:13px;font-weight:600;">Gráfico de Latência & Perda (últimas ${labels.length} sondas)</div>
+        <div style="font-size:11px;color:var(--text-muted);">RTT (ms) & · perdas</div>
+      </div>
+      <svg id="latency-chart" viewBox="0 0 100 40" preserveAspectRatio="none" style="width:100%;height:140px;overflow:visible;"></svg>
+    `;
+
+    const body = tableCard.querySelector('.table-wrap') || tableCard.lastElementChild;
+    tableCard.insertBefore(chartWrapper, body);
+
+    const svg = chartWrapper.querySelector('#latency-chart');
+    if (!svg) return;
+
+    const maxRtt = Math.max(...rtt, 1);
+
+    // Gera path de RTT
+    let path = '';
+    rtt.forEach((v, i) => {
+      const x = (i / Math.max(rtt.length - 1, 1)) * 100;
+      const y = 40 - (v / maxRtt) * 32 - 4; // padding top/bottom
+      path += (i === 0 ? 'M' : ' L') + x.toFixed(2) + ' ' + y.toFixed(2);
+    });
+
+    const rttPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    rttPath.setAttribute('d', path);
+    rttPath.setAttribute('fill', 'none');
+    rttPath.setAttribute('stroke', 'var(--accent)');
+    rttPath.setAttribute('stroke-width', '0.8');
+    svg.appendChild(rttPath);
+
+    // Pontos de perda (bolinhas vermelhas na parte inferior)
+    loss.forEach((v, i) => {
+      if (!v) return;
+      const x = (i / Math.max(loss.length - 1, 1)) * 100;
+      const y = 36;
+      const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      circle.setAttribute('cx', x.toFixed(2));
+      circle.setAttribute('cy', y.toString());
+      circle.setAttribute('r', '0.9');
+      circle.setAttribute('fill', 'var(--offline)');
+      svg.appendChild(circle);
+    });
+  })();
 </script>
 {% endblock %}

@@ -14,6 +14,29 @@
   <style>
     
     :root {
+      --bg-base: #f5f5f7;
+      --bg-card: #ffffff;
+      --bg-card-hover: #f0f4ff;
+      --bg-input: #f3f4f6;
+      --border: #e1e4e8;
+      --border-subtle: #edf1f5;
+      --text-primary: #111827;
+      --text-secondary: #4b5563;
+      --text-muted: #9ca3af;
+      --accent: #2563eb;
+      --accent-hover: #1d4ed8;
+      --online: #16a34a;
+      --offline: #dc2626;
+      --unknown: #d97706;
+      --online-bg: rgba(22, 163, 74, .08);
+      --offline-bg: rgba(220, 38, 38, .08);
+      --unknown-bg: rgba(217, 119, 6, .08);
+      --radius: 10px;
+      --radius-sm: 6px;
+      --shadow: 0 10px 30px rgba(15, 23, 42, .08);
+    }
+
+    body.theme-dark {
       --bg-base: #0d1117;
       --bg-card: #161b22;
       --bg-card-hover: #1c2330;
@@ -22,7 +45,7 @@
       --border-subtle: #21262d;
       --text-primary: #e6edf3;
       --text-secondary: #8b949e;
-      --text-muted: #484f58;
+      --text-muted: #6b7280;
       --accent: #1f6feb;
       --accent-hover: #388bfd;
       --online: #3fb950;
@@ -31,8 +54,6 @@
       --online-bg: rgba(63, 185, 80, .12);
       --offline-bg: rgba(248, 81, 73, .12);
       --unknown-bg: rgba(210, 153, 34, .12);
-      --radius: 10px;
-      --radius-sm: 6px;
       --shadow: 0 4px 24px rgba(0, 0, 0, .45);
     }
 
@@ -621,7 +642,13 @@
     <div class="main">
       <header class="topbar">
         <span class="topbar-title">{% block page_title %}Dashboard{% endblock %}</span>
-        <span class="topbar-meta" id="last-refresh">Atualizado: {{ now() }}</span>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <button id="theme-toggle"
+            style="border:1px solid var(--border);background:var(--bg-input);color:var(--text-secondary);padding:4px 10px;border-radius:999px;font-size:11px;cursor:pointer;">
+            🌞 Tema claro
+          </button>
+          <span class="topbar-meta" id="last-refresh">Atualizado: {{ now() }}</span>
+        </div>
       </header>
 
       <div class="content">
@@ -637,7 +664,28 @@
   </div>
 
   <script>
-    
+    // Tema claro/escuro com persistência
+    (function () {
+      const saved = localStorage.getItem('cm-theme') || 'light';
+      if (saved === 'dark') {
+        document.body.classList.add('theme-dark');
+      }
+      const btn = document.getElementById('theme-toggle');
+      if (btn) {
+        const applyLabel = () => {
+          const dark = document.body.classList.contains('theme-dark');
+          btn.textContent = dark ? '🌙 Tema escuro' : '🌞 Tema claro';
+        };
+        applyLabel();
+        btn.addEventListener('click', () => {
+          const dark = document.body.classList.toggle('theme-dark');
+          localStorage.setItem('cm-theme', dark ? 'dark' : 'light');
+          applyLabel();
+        });
+      }
+    })();
+
+    // Contagem regressiva de atualização automática
     let countdown = 30;
     const el = document.getElementById('countdown');
     setInterval(() => {
