@@ -1,37 +1,107 @@
 {% extends "base.html" %}
 
 {% block title %}Tickets – Camera Monitor{% endblock %}
-{% block page_title %}🎫 Tickets de Incidentes{% endblock %}
+{% block page_title %}Tickets de Incidentes{% endblock %}
+
+{% block extra_head %}
+<style>
+    .filter-card {
+        margin-bottom: 20px;
+    }
+
+    .filter-card .card-body {
+        padding: 14px 20px;
+    }
+
+    .filter-label {
+        font-size: 13px;
+        color: var(--text-secondary);
+        margin-right: 8px;
+        font-weight: 500;
+    }
+
+    .filter-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    /* Card header icon */
+    .card-header-icon {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header-icon svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
+    .ticket-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 400;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Duration badge */
+    .duration-badge {
+        color: var(--offline);
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    /* Empty state */
+    .empty-success {
+        color: var(--online);
+        font-size: 13px;
+        margin-top: 8px;
+        font-weight: 500;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
 
-<div class="card" style="margin-bottom:20px;">
-    <div class="card-body" style="padding:14px 20px;">
+<!-- Filters -->
+<div class="card filter-card">
+    <div class="card-body">
         <div class="filter-row">
-            <span style="font-size:13px;color:var(--text-secondary);margin-right:4px;">Filtrar:</span>
-            <a href="/tickets" class="btn {% if not status_filter %}active{% endif %}" id="filter-all">Todos</a>
-            <a href="/tickets?status=OPEN" class="btn {% if status_filter == 'OPEN' %}active{% endif %}"
-                id="filter-open">
-                🚨 Abertos
+            <span class="filter-label">Filtrar:</span>
+            <a href="/tickets" class="btn filter-btn {% if not status_filter %}active{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 3H2l8 9.46V19l4 2v-8.54L22 3z"/></svg>
+                Todos
             </a>
-            <a href="/tickets?status=RESOLVED" class="btn {% if status_filter == 'RESOLVED' %}active{% endif %}"
-                id="filter-resolved">
-                ✅ Resolvidos
+            <a href="/tickets?status=OPEN" class="btn filter-btn {% if status_filter == 'OPEN' %}active{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+                Abertos
+            </a>
+            <a href="/tickets?status=RESOLVED" class="btn filter-btn {% if status_filter == 'RESOLVED' %}active{% endif %}">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                Resolvidos
             </a>
         </div>
     </div>
 </div>
 
-
+<!-- Tickets Table -->
 <div class="card">
     <div class="card-header">
-        <span>
-            {% if status_filter == 'OPEN' %}🚨 Tickets Abertos
-            {% elif status_filter == 'RESOLVED' %}✅ Tickets Resolvidos
-            {% else %}📋 Todos os Tickets
+        <div class="card-header-icon">
+            {% if status_filter == 'OPEN' %}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--offline);"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+            Tickets Abertos
+            {% elif status_filter == 'RESOLVED' %}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="color:var(--online);"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+            Tickets Resolvidos
+            {% else %}
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/><path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/></svg>
+            Todos os Tickets
             {% endif %}
-        </span>
-        <span style="font-size:12px;color:var(--text-muted);font-weight:400;">
+        </div>
+        <span class="ticket-count">
             {{ tickets|length }} ticket(s)
         </span>
     </div>
@@ -68,8 +138,7 @@
                     </td>
                     <td>
                         <span class="badge {{ ticket.status | status_badge }}">
-                            {% if ticket.status == 'OPEN' %}<span class="dot dot-fail pulse"
-                                style="display:inline-block;margin-right:3px;"></span>{% endif %}
+                            <span class="badge-dot"></span>
                             {{ ticket.status }}
                         </span>
                     </td>
@@ -85,9 +154,8 @@
                             {{ ticket.opened_at | fmt_duration(ticket.closed_at) }}
                         </span>
                         {% elif ticket.status == 'OPEN' %}
-                        <span
-                            style="color:var(--offline);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">
-                            ⏱ {{ ticket.opened_at | fmt_duration }}
+                        <span class="duration-badge">
+                            {{ ticket.opened_at | fmt_duration }}
                         </span>
                         {% else %}—{% endif %}
                     </td>
@@ -102,11 +170,13 @@
     </div>
     {% else %}
     <div class="empty">
-        <div class="empty-icon">🎉</div>
+        <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/></svg>
+        </div>
         <p>Nenhum ticket encontrado para este filtro.</p>
         {% if status_filter == 'OPEN' %}
-        <p style="font-size:13px;margin-top:8px;color:var(--online);">
-            ✅ Todas as câmeras estão online!
+        <p class="empty-success">
+            Todas as câmeras estão online!
         </p>
         {% endif %}
     </div>

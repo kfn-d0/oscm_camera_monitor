@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Adicionar Câmera – Camera Monitor{% endblock %}
-{% block page_title %}➕ Adicionar Host / Câmera{% endblock %}
+{% block page_title %}{% if form.is_edit %}Editar Câmera{% else %}Adicionar Câmera{% endif %}{% endblock %}
 
 {% block extra_head %}
 
@@ -9,12 +9,12 @@
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
     .form-card {
-        max-width: 860px;
+        max-width: 880px;
         margin: 0 auto;
     }
 
     .form-section {
-        padding: 24px 24px 8px;
+        padding: 24px 24px 12px;
         border-bottom: 1px solid var(--border);
     }
 
@@ -23,12 +23,21 @@
     }
 
     .form-section-title {
-        font-size: 12px;
+        font-size: 11px;
         font-weight: 700;
         text-transform: uppercase;
-        letter-spacing: .8px;
+        letter-spacing: 1px;
         color: var(--text-muted);
         margin-bottom: 18px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .form-section-title svg {
+        width: 14px;
+        height: 14px;
+        color: var(--accent);
     }
 
     .form-grid {
@@ -79,7 +88,7 @@
         background: var(--bg-input);
         border: 1px solid var(--border);
         border-radius: var(--radius-sm);
-        padding: 9px 12px;
+        padding: 10px 14px;
         color: var(--text-primary);
         font-size: 13.5px;
         font-family: inherit;
@@ -93,7 +102,7 @@
     textarea:focus {
         outline: none;
         border-color: var(--accent);
-        box-shadow: 0 0 0 3px rgba(31, 111, 235, .15);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, .1);
     }
 
     input.error {
@@ -106,7 +115,7 @@
         margin-top: 2px;
     }
 
-    
+    /* Map picker */
     #map-picker {
         height: 300px;
         width: 100%;
@@ -115,11 +124,11 @@
         background: #1a1f27;
     }
 
-    .leaflet-tile {
+    body.theme-dark .leaflet-tile {
         filter: brightness(0.7) invert(1) contrast(1.1) hue-rotate(200deg) saturate(0.4) brightness(0.7);
     }
 
-    .leaflet-container {
+    body.theme-dark .leaflet-container {
         background: #1a1f27;
     }
 
@@ -132,7 +141,13 @@
         gap: 6px;
     }
 
-    
+    .map-hint svg {
+        width: 14px;
+        height: 14px;
+        color: var(--accent);
+    }
+
+    /* Toggle */
     .toggle-row {
         display: flex;
         align-items: center;
@@ -176,7 +191,7 @@
     }
 
     input:checked+.slider {
-        background: rgba(63, 185, 80, .25);
+        background: rgba(16, 185, 129, .2);
         border-color: var(--online);
     }
 
@@ -190,7 +205,7 @@
         color: var(--text-primary);
     }
 
-    
+    /* Form actions */
     .form-actions {
         padding: 20px 24px;
         display: flex;
@@ -213,9 +228,8 @@
     }
 
     .btn-submit:hover {
-        opacity: .9;
+        box-shadow: 0 4px 14px rgba(99, 102, 241, .35);
         transform: translateY(-1px);
-        box-shadow: 0 4px 14px rgba(31, 111, 235, .4);
     }
 
     .btn-cancel {
@@ -238,35 +252,61 @@
         color: var(--text-primary);
     }
 
-    
+    /* Alerts */
     .alert {
         border-radius: var(--radius-sm);
-        padding: 12px 16px;
+        padding: 14px 18px;
         font-size: 13px;
         margin-bottom: 20px;
         display: flex;
-        gap: 10px;
+        gap: 12px;
         align-items: flex-start;
-        line-height: 1.5;
+        line-height: 1.6;
+    }
+
+    .alert svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+        margin-top: 1px;
     }
 
     .alert-success {
         background: var(--online-bg);
-        border: 1px solid var(--online);
+        border: 1px solid rgba(16, 185, 129, .2);
         color: var(--online);
     }
 
     .alert-error {
         background: var(--offline-bg);
-        border: 1px solid var(--offline);
+        border: 1px solid rgba(239, 68, 68, .2);
         color: var(--offline);
     }
 
     .id-preview {
         font-family: 'JetBrains Mono', monospace;
         font-size: 12px;
-        color: var(--accent-hover);
+        color: var(--accent);
         margin-top: 4px;
+    }
+
+    /* Card header icon */
+    .card-header-icon {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header-icon svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
+    @media (max-width: 640px) {
+        .form-grid, .form-grid-3 {
+            grid-template-columns: 1fr;
+        }
     }
 </style>
 {% endblock %}
@@ -276,12 +316,12 @@
 
     {% if success %}
     <div class="alert alert-success">
-        ✅ <div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        <div>
             <strong>Câmera {{ success.action }} com sucesso!</strong><br />
             <span style="font-size:12px;">
                 <strong>{{ success.name }}</strong> ({{ success.host }}) foi {{ success.action }} e será monitorada no
-                próximo ciclo.
-                O <code>config.yaml</code> foi sincronizado.
+                próximo ciclo. O <code>config.yaml</code> foi sincronizado.
             </span>
             <br /><a href="/camera/{{ success.id }}"
                 style="color:var(--online);font-size:12px;margin-top:4px;display:inline-block;">
@@ -293,13 +333,22 @@
 
     {% if error %}
     <div class="alert alert-error">
-        ❌ <div><strong>Erro ao processar:</strong><br />{{ error }}</div>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+        <div><strong>Erro ao processar:</strong><br />{{ error }}</div>
     </div>
     {% endif %}
 
     <div class="card">
         <div class="card-header">
-            {% if form.is_edit %}✏️ Editar Câmera: {{ form.name }}{% else %}➕ Nova Câmera / Host{% endif %}
+            <div class="card-header-icon">
+                {% if form.is_edit %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/><path d="m15 5 4 4"/></svg>
+                Editar Câmera: {{ form.name }}
+                {% else %}
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M8 12h8"/><path d="M12 8v8"/></svg>
+                Nova Câmera / Host
+                {% endif %}
+            </div>
         </div>
 
         <form method="post" action="/cameras/add" id="add-form">
@@ -307,7 +356,10 @@
             <input type="hidden" name="old_id" value="{{ form.id or form.cam_id or '' }}">
 
             <div class="form-section">
-                <div class="form-section-title">🏷️ Identificação</div>
+                <div class="form-section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 7V4a2 2 0 0 1 2-2h8.5L20 7.5V20a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-3"/><polyline points="14 2 14 8 20 8"/><path d="M4 12h12"/></svg>
+                    Identificação
+                </div>
                 <div class="form-grid">
                     <div class="form-group">
                         <label for="name">Nome da câmera<span class="required">*</span></label>
@@ -317,11 +369,11 @@
                     <div class="form-group">
                         <label for="cam_id">
                             ID único<span class="required">*</span>
-                            <span class="hint">(gerado automaticamente: cam001-icmp-host)</span>
+                            <span class="hint">(gerado automaticamente)</span>
                         </label>
                         <input type="text" id="cam_id" name="cam_id" placeholder="cam-exemplo-01"
                             value="{{ form.id or form.cam_id or '' }}" required readonly
-                            style="background:var(--bg-base);cursor:not-allowed;" />
+                            style="background:var(--bg-base);cursor:not-allowed;opacity:.7;" />
                         <div class="id-preview" id="id-preview"></div>
                     </div>
                 </div>
@@ -331,7 +383,7 @@
                         <input type="text" id="host" name="host" placeholder="Ex: 10.10.16.100"
                             value="{{ form.host or '' }}" required oninput="updateID()" />
                     </div>
-                    <div class="form-group" style="margin-top: 10px; grid-column: 1 / -1;">
+                    <div class="form-group">
                         <label for="location">Localização<span class="hint">(descrição do local)</span></label>
                         <input type="text" id="location" name="location" placeholder="Ex: Praça São Luís – São Luís"
                             value="{{ form.location or '' }}" />
@@ -339,9 +391,12 @@
                 </div>
             </div>
 
-            
+            <!-- Network Config -->
             <div class="form-section">
-                <div class="form-section-title">🔌 Configuração de Rede</div>
+                <div class="form-section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="16" y="16" width="6" height="6" rx="1"/><rect x="2" y="16" width="6" height="6" rx="1"/><rect x="9" y="2" width="6" height="6" rx="1"/><path d="M5 16v-3a1 1 0 0 1 1-1h12a1 1 0 0 1 1 1v3"/><path d="M12 12V8"/></svg>
+                    Configuração de Rede
+                </div>
                 <div class="form-grid-3">
                     <div class="form-group">
                         <label for="ports">Portas TCP monitoradas<span class="required">*</span></label>
@@ -353,8 +408,7 @@
                         <label>&nbsp;</label>
                         <div class="toggle-row" style="margin-top:4px;">
                             <label class="toggle">
-                                <input type="checkbox" id="icmp_only" name="icmp_only" {% if form.icmp_only %}checked{%
-                                    endif %} onchange="updateID()" />
+                                <input type="checkbox" id="icmp_only" name="icmp_only" {% if form.icmp_only %}checked{% endif %} onchange="updateID()" />
                                 <span class="slider"></span>
                             </label>
                             <span class="toggle-label">Monitorar apenas ICMP (Ping)</span>
@@ -363,44 +417,51 @@
                 </div>
             </div>
 
+            <!-- Map Position -->
             <div class="form-section">
-                <div class="form-section-title">🗺️ Posição no Mapa <span
-                        style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;">(opcional – clique
-                        no mapa)</span></div>
+                <div class="form-section-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+                    Posição no Mapa
+                    <span style="font-weight:400;font-size:11px;text-transform:none;letter-spacing:0;color:var(--text-muted);">(opcional – clique no mapa)</span>
+                </div>
                 <div class="form-grid" style="margin-bottom:12px;">
                     <div class="form-group">
                         <label for="lat">Latitude</label>
-                        <input type="number" id="lat" name="lat" placeholder="-2.5300" value="{{ form.lat or '' }}"
-                            step="any" />
+                        <input type="number" id="lat" name="lat" placeholder="-2.5300" value="{{ form.lat or '' }}" step="any" />
                     </div>
                     <div class="form-group">
                         <label for="lng">Longitude</label>
-                        <input type="number" id="lng" name="lng" placeholder="-44.3000" value="{{ form.lng or '' }}"
-                            step="any" />
+                        <input type="number" id="lng" name="lng" placeholder="-44.3000" value="{{ form.lng or '' }}" step="any" />
                     </div>
                 </div>
                 <div id="map-picker"></div>
-                <div class="map-hint">📍 Clique no mapa para definir a posição. Os campos serão preenchidos
-                    automaticamente.</div>
+                <div class="map-hint">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                    Clique no mapa para definir a posição. Os campos serão preenchidos automaticamente.
+                </div>
             </div>
 
-            
+            <!-- Actions -->
             <div class="form-actions">
                 <button type="submit" class="btn-submit">
-                    {% if form.is_edit %}💾 Salvar Alterações{% else %}💾 Adicionar Câmera{% endif %}
+                    {% if form.is_edit %}Salvar Alterações{% else %}Adicionar Câmera{% endif %}
                 </button>
-                <a href="/cameras/add" class="btn-cancel">✕ Limpar / Cancelar</a>
+                <a href="/cameras/add" class="btn-cancel">Cancelar</a>
                 <span style="font-size:12px;color:var(--text-muted);margin-left:auto;">
-                    📄 O <code>config.yaml</code> será sincronizado automaticamente
+                    O <code>config.yaml</code> será sincronizado automaticamente
                 </span>
             </div>
 
         </form>
     </div>
 
+    <!-- Existing Cameras -->
     <div class="card" style="margin-top:20px;">
         <div class="card-header">
-            📋 Gerenciar Câmeras Cadastradas ({{ existing_cameras | length }})
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+                Câmeras Cadastradas ({{ existing_cameras | length }})
+            </div>
         </div>
         {% if existing_cameras %}
         <div class="table-wrap">
@@ -418,8 +479,7 @@
                 <tbody>
                     {% for cam in existing_cameras %}
                     <tr>
-                        <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">{{
-                            cam.id }}</td>
+                        <td style="font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--text-muted);">{{ cam.id }}</td>
                         <td><a href="/camera/{{ cam.id }}" class="cam-name">{{ cam.name }}</a></td>
                         <td style="font-family:'JetBrains Mono',monospace;font-size:12px;">{{ cam.host }}</td>
                         <td style="font-size:12px;color:var(--text-secondary);">
@@ -431,21 +491,30 @@
                         </td>
                         <td style="font-size:12px;">
                             {% if cam.icmp_only %}
-                            <span class="badge badge-unknown" style="font-size:10px;">ICMP Only</span>
+                            <span class="badge badge-unknown" style="font-size:10px;">
+                                <span class="badge-dot"></span>
+                                ICMP Only
+                            </span>
                             {% else %}
-                            <span class="badge badge-online" style="font-size:10px;">TCP+ICMP</span>
+                            <span class="badge badge-online" style="font-size:10px;">
+                                <span class="badge-dot"></span>
+                                TCP+ICMP
+                            </span>
                             {% endif %}
                         </td>
                         <td>
                             <div style="display:flex;gap:8px;">
-                                <a href="/cameras/add?edit={{ cam.id }}" class="btn"
-                                    style="padding:4px 8px;font-size:11px;">✏️ Editar</a>
+                                <a href="/cameras/add?edit={{ cam.id }}" class="btn" style="padding:5px 10px;font-size:11px;">
+                                    <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+                                    Editar
+                                </a>
                                 <form method="post" action="/cameras/delete"
                                     onsubmit="return confirm('Tem certeza que deseja excluir esta câmera?')">
                                     <input type="hidden" name="cam_id" value="{{ cam.id }}">
-                                    <button type="submit" class="btn"
-                                        style="padding:4px 8px;font-size:11px;color:var(--offline);border-color:var(--offline-bg);">🗑️
-                                        Excluir</button>
+                                    <button type="submit" class="btn btn-danger" style="padding:5px 10px;font-size:11px;">
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"/><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"/><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"/></svg>
+                                        Excluir
+                                    </button>
                                 </form>
                             </div>
                         </td>
@@ -466,7 +535,7 @@
 
 {% block extra_script %}
 <script>
-    const nextNum = {{ next_num | default (1) }};
+    const nextNum = {{ next_num | default(1) }};
     const isEdit = {{ 'true' if form.is_edit else 'false' }};
     const initialID = "{{ form.id or '' }}";
 
@@ -504,7 +573,7 @@
     function placeMarker(lat, lng) {
         if (marker) map.removeLayer(marker);
         marker = L.circleMarker([lat, lng], {
-            radius: 10, color: '#1f6feb', fillColor: '#1f6feb', fillOpacity: 0.5, weight: 2
+            radius: 10, color: 'var(--accent)', fillColor: 'var(--accent)', fillOpacity: 0.5, weight: 2
         }).addTo(map);
         latInput.value = lat.toFixed(7);
         lngInput.value = lng.toFixed(7);

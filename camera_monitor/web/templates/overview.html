@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Visão Geral – Camera Monitor{% endblock %}
-{% block page_title %}📷 Visão Geral – São Luís / MA{% endblock %}
+{% block page_title %}Visão Geral{% endblock %}
 
 {% block extra_head %}
 
@@ -14,10 +14,11 @@
         border-radius: var(--radius);
         overflow: hidden;
         margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
     }
 
     #map-header {
-        padding: 14px 20px;
+        padding: 16px 20px;
         border-bottom: 1px solid var(--border);
         font-size: 14px;
         font-weight: 600;
@@ -26,31 +27,41 @@
         justify-content: space-between;
     }
 
+    #map-header .map-title {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    #map-header .map-title svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
     #map {
-        height: 380px;
+        height: 400px;
         width: 100%;
         background: #1a1f27;
     }
 
-    
-    .leaflet-tile {
+    /* Dark map tiles */
+    body.theme-dark .leaflet-tile {
         filter: brightness(0.7) invert(1) contrast(1.1) hue-rotate(200deg) saturate(0.4) brightness(0.7);
     }
 
-    .leaflet-container {
+    body.theme-dark .leaflet-container {
         background: #1a1f27;
     }
 
-    
+    /* Camera markers */
     .cam-marker {
         display: flex;
         align-items: center;
         justify-content: center;
         border-radius: 50%;
         border: 3px solid;
-        box-shadow: 0 0 12px rgba(0, 0, 0, .6);
-        font-size: 16px;
-        font-weight: 700;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, .3);
         transition: transform .2s;
         cursor: pointer;
     }
@@ -59,139 +70,186 @@
         transform: scale(1.2);
     }
 
+    .cam-marker svg {
+        width: 16px;
+        height: 16px;
+    }
+
     .cam-marker.online {
-        background: rgba(63, 185, 80, .25);
-        border-color: #3fb950;
-        color: #3fb950;
+        background: rgba(16, 185, 129, .2);
+        border-color: var(--online);
+        color: var(--online);
     }
 
     .cam-marker.offline {
-        background: rgba(248, 81, 73, .25);
-        border-color: #f85149;
-        color: #f85149;
+        background: rgba(239, 68, 68, .2);
+        border-color: var(--offline);
+        color: var(--offline);
     }
 
     .cam-marker.unknown {
-        background: rgba(210, 153, 34, .25);
-        border-color: #d29922;
-        color: #d29922;
+        background: rgba(245, 158, 11, .2);
+        border-color: var(--unknown);
+        color: var(--unknown);
     }
 
-    
     .cam-marker.offline::after {
         content: '';
         position: absolute;
         width: 100%;
         height: 100%;
         border-radius: 50%;
-        border: 2px solid #f85149;
+        border: 2px solid var(--offline);
         animation: ring-pulse 1.5s ease-out infinite;
     }
 
     @keyframes ring-pulse {
-        0% {
-            transform: scale(1);
-            opacity: 1;
-        }
-
-        100% {
-            transform: scale(2.2);
-            opacity: 0;
-        }
+        0% { transform: scale(1); opacity: 1; }
+        100% { transform: scale(2.2); opacity: 0; }
     }
 
-    
+    /* Popup styling */
     .leaflet-popup-content-wrapper {
         background: var(--bg-card) !important;
         border: 1px solid var(--border) !important;
-        border-radius: 10px !important;
-        box-shadow: var(--shadow) !important;
+        border-radius: 12px !important;
+        box-shadow: var(--shadow-lg) !important;
         color: var(--text-primary) !important;
     }
 
     .leaflet-popup-tip {
         background: var(--bg-card) !important;
+        border: 1px solid var(--border) !important;
     }
 
     .leaflet-popup-content {
-        margin: 12px 16px !important;
+        margin: 14px 18px !important;
         font-family: 'Inter', sans-serif;
     }
 
     .popup-title {
         font-weight: 700;
         font-size: 14px;
-        margin-bottom: 6px;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .popup-row {
         font-size: 12px;
         color: var(--text-secondary);
-        margin: 3px 0;
+        margin: 4px 0;
+        display: flex;
+        align-items: center;
+        gap: 6px;
     }
 
     .popup-link {
-        display: inline-block;
-        margin-top: 8px;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        margin-top: 10px;
         font-size: 12px;
         font-weight: 600;
-        color: var(--accent-hover);
+        color: var(--accent);
         text-decoration: none;
+        transition: color .15s;
     }
 
     .popup-link:hover {
-        text-decoration: underline;
+        color: var(--accent-hover);
     }
 
     .leaflet-popup-close-button {
         color: var(--text-muted) !important;
+    }
+
+    /* Camera list header */
+    .camera-list-header {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .camera-list-header svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
+    .camera-count {
+        font-size: 12px;
+        color: var(--text-muted);
+        font-weight: 400;
+        font-family: 'JetBrains Mono', monospace;
+    }
+
+    /* Port tags */
+    .port-tag {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 2px;
     }
 </style>
 {% endblock %}
 
 {% block content %}
 
+<!-- Stats -->
 <div class="stats-grid">
     <div class="stat-card">
-        <div class="stat-icon total">📹</div>
-        <div>
+        <div class="stat-icon total">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V15"/><path d="M8 21h8a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Z"/><circle cx="12" cy="16" r="2"/></svg>
+        </div>
+        <div class="stat-info">
             <div class="stat-value">{{ stats.total_cameras }}</div>
             <div class="stat-label">Total de Câmeras</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon online">✅</div>
-        <div>
+        <div class="stat-icon online">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <div class="stat-info">
             <div class="stat-value" style="color:var(--online);">{{ stats.online_cameras }}</div>
             <div class="stat-label">Online</div>
         </div>
     </div>
     <div class="stat-card">
-        <div class="stat-icon offline">🚨</div>
-        <div>
+        <div class="stat-icon offline">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+        </div>
+        <div class="stat-info">
             <div class="stat-value" style="color:var(--offline);">{{ stats.offline_cameras }}</div>
-            <div class="stat-label">Offline / Com Ticket Aberto</div>
+            <div class="stat-label">Offline / Com Ticket</div>
         </div>
     </div>
 </div>
 
-
+<!-- Map -->
 <div id="map-container">
     <div id="map-header">
-        <span>🗺️ Mapa – São Luís / MA</span>
+        <div class="map-title">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="3 6 9 3 15 6 21 3 21 18 15 21 9 18 3 21"/><line x1="9" x2="9" y1="3" y2="18"/><line x1="15" x2="15" y1="6" y2="21"/></svg>
+            Mapa – São Luís / MA
+        </div>
         <span style="font-size:12px;color:var(--text-muted);font-weight:400;">
-            📍 Clique em um marcador para ver detalhes
+            Clique em um marcador para detalhes
         </span>
     </div>
     <div id="map"></div>
 </div>
 
-
+<!-- Camera List -->
 <div class="card">
     <div class="card-header">
-        <span>📋 Lista de Câmeras</span>
-        <span style="font-size:12px;color:var(--text-muted);font-weight:400;">
-            {{ cameras|length }} câmera(s) · TCP:554 + ICMP
+        <div class="camera-list-header">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" x2="19" y1="8" y2="14"/><line x1="22" x2="16" y1="11" y2="11"/></svg>
+            Lista de Câmeras
+        </div>
+        <span class="camera-count">
+            {{ cameras|length }} câmera(s) · TCP + ICMP
         </span>
     </div>
 
@@ -217,7 +275,7 @@
                     <td>
                         <a href="/camera/{{ cam.id }}" class="cam-name">{{ cam.name }}</a>
                         <div class="cam-host">{{ cam.host }}</div>
-                        <div style="font-size:11px;color:var(--text-muted);margin-top:2px;">
+                        <div class="port-tag">
                             Portas: {{ cam.ports_json | parse_ports }}
                         </div>
                     </td>
@@ -225,8 +283,7 @@
                     <td>
                         {% set st = cam.last_status or 'UNKNOWN' %}
                         <span class="badge {{ st | status_badge }}">
-                            {% if st == 'OFFLINE' %}<span class="dot dot-fail pulse"
-                                style="display:inline-block;margin-right:3px;"></span>{% endif %}
+                            <span class="badge-dot"></span>
                             {{ st }}
                         </span>
                     </td>
@@ -234,11 +291,18 @@
                     <td>
                         {% if cam.last_rtt_ms %}
                         <span class="rtt">
-                            {% if cam.last_rtt_ms < 100 %}🟢{% elif cam.last_rtt_ms < 300 %}🟡{% else %}🔴{% endif %}
-                                {{ "%.1f" |format(cam.last_rtt_ms) }} ms </span>
-                                {% else %}
-                                <span style="color:var(--text-muted);">—</span>
-                                {% endif %}
+                            {% if cam.last_rtt_ms < 100 %}
+                            <span style="color:var(--online);">●</span>
+                            {% elif cam.last_rtt_ms < 300 %}
+                            <span style="color:var(--unknown);">●</span>
+                            {% else %}
+                            <span style="color:var(--offline);">●</span>
+                            {% endif %}
+                            {{ "%.1f" |format(cam.last_rtt_ms) }} ms
+                        </span>
+                        {% else %}
+                        <span style="color:var(--text-muted);">—</span>
+                        {% endif %}
                     </td>
                     <td style="font-size:12px;color:var(--text-secondary);">{{ cam.last_method or '—' }}</td>
                     <td style="font-size:12.5px;color:var(--offline);">
@@ -253,8 +317,9 @@
                     </td>
                     <td>
                         {% if cam.consecutive_failures and cam.consecutive_failures > 0 %}
-                        <span style="color:var(--offline);font-family:'JetBrains Mono',monospace;font-size:12px;">🔴 {{
-                            cam.consecutive_failures }}</span>
+                        <span style="color:var(--offline);font-family:'JetBrains Mono',monospace;font-size:12px;font-weight:600;">
+                            {{ cam.consecutive_failures }}
+                        </span>
                         {% else %}
                         <span style="color:var(--text-muted);font-size:12px;">—</span>
                         {% endif %}
@@ -270,8 +335,10 @@
     </div>
     {% else %}
     <div class="empty">
-        <div class="empty-icon">📷</div>
-        <p>Nenhuma câmera habilitada. Configure o <code>config.yaml</code>.</p>
+        <div class="empty-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="color:var(--text-muted);"><path d="M15.2 3a2 2 0 0 1 1.4.6l3.8 3.8a2 2 0 0 1 .6 1.4V15"/><path d="M8 21h8a2 2 0 0 0 2-2v-6a2 2 0 0 0-2-2H8a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2Z"/><circle cx="12" cy="16" r="2"/></svg>
+        </div>
+        <p>Nenhuma câmera habilitada.<br/>Configure o <code>config.yaml</code>.</p>
     </div>
     {% endif %}
 </div>
@@ -279,9 +346,6 @@
 
 {% block extra_script %}
 <script>
-    
-    
-    
     const MARKERS = {{ markers_json | safe }};
 
     const map = L.map('map', {
@@ -296,42 +360,48 @@
     }).addTo(map);
 
     const statusColor = {
-        'ONLINE': '#3fb950',
-        'OFFLINE': '#f85149',
-        'UNKNOWN': '#d29922',
+        'ONLINE': 'var(--online)',
+        'OFFLINE': 'var(--offline)',
+        'UNKNOWN': 'var(--unknown)',
     };
 
     MARKERS.forEach(function (cam) {
-        const color = statusColor[cam.status] || '#d29922';
+        const color = statusColor[cam.status] || 'var(--unknown)';
         const cls = cam.status.toLowerCase();
         const rttStr = cam.rtt ? cam.rtt.toFixed(1) + ' ms' : '—';
 
         const icon = L.divIcon({
             className: '',
-            html: `<div class="cam-marker ${cls}" style="width:34px;height:34px;position:relative;">📷</div>`,
+            html: `<div class="cam-marker ${cls}" style="width:34px;height:34px;position:relative;">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 2a10 10 0 0 1 10 10"/><path d="M12 6a6 6 0 0 1 6 6"/></svg>
+            </div>`,
             iconSize: [34, 34],
             iconAnchor: [17, 34],
             popupAnchor: [0, -36],
         });
 
         const popupHtml = `
-    <div class="popup-title">📷 ${cam.name}</div>
-    <div class="popup-row">🌐 Host: <code style="font-size:11px;">${cam.host}</code></div>
-    <div class="popup-row">📍 ${cam.location}</div>
-    <div class="popup-row">
-      Status:&nbsp;
-      <span style="color:${color};font-weight:700;">${cam.status}</span>
-      &nbsp;|&nbsp;RTT: ${rttStr}
-    </div>
-    <a class="popup-link" href="/camera/${cam.id}">Ver detalhes →</a>
-  `;
+            <div class="popup-title">${cam.name}</div>
+            <div class="popup-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="2" x2="22" y1="12" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+                <code style="font-size:11px;">${cam.host}</code>
+            </div>
+            <div class="popup-row">
+                <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/></svg>
+                ${cam.location}
+            </div>
+            <div class="popup-row">
+                Status: <span style="color:${color};font-weight:700;">${cam.status}</span>
+                &nbsp;·&nbsp;RTT: ${rttStr}
+            </div>
+            <a class="popup-link" href="/camera/${cam.id}">Ver detalhes →</a>
+        `;
 
         L.marker([cam.lat, cam.lng], { icon })
             .addTo(map)
-            .bindPopup(popupHtml, { maxWidth: 260 });
+            .bindPopup(popupHtml, { maxWidth: 280 });
     });
 
-    
     if (MARKERS.length > 0) {
         const bounds = L.latLngBounds(MARKERS.map(m => [m.lat, m.lng]));
         map.fitBounds(bounds, { padding: [60, 60] });

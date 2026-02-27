@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block title %}Configurações – Camera Monitor{% endblock %}
-{% block page_title %}⚙️ Configurações do Sistema{% endblock %}
+{% block page_title %}Configurações{% endblock %}
 
 {% block extra_head %}
 <style>
@@ -20,7 +20,7 @@
 
     label {
         display: block;
-        font-size: 13px;
+        font-size: 12.5px;
         font-weight: 600;
         color: var(--text-secondary);
         margin-bottom: 8px;
@@ -36,13 +36,14 @@
         color: var(--text-primary);
         font-size: 14px;
         font-family: inherit;
-        transition: border-color .2s;
+        transition: border-color .2s, box-shadow .2s;
     }
 
     input[type="text"]:focus,
     textarea:focus {
         outline: none;
         border-color: var(--accent);
+        box-shadow: 0 0 0 3px rgba(99, 102, 241, .1);
     }
 
     textarea {
@@ -57,55 +58,125 @@
         font-size: 11px;
         color: var(--text-muted);
         margin-top: 6px;
+        line-height: 1.5;
     }
 
     .hint code {
-        background: rgba(255, 255, 255, 0.05);
-        padding: 1px 4px;
-        border-radius: 3px;
-        color: var(--accent-hover);
+        background: var(--bg-input);
+        padding: 1px 5px;
+        border-radius: 4px;
+        color: var(--accent);
+        font-size: 11px;
     }
 
     .alert {
-        padding: 12px 16px;
+        padding: 14px 18px;
         border-radius: var(--radius-sm);
         font-size: 13px;
         margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
     }
 
     .alert-success {
         background: var(--online-bg);
-        border: 1px solid var(--online);
+        border: 1px solid rgba(16, 185, 129, .2);
         color: var(--online);
     }
 
     .alert-error {
         background: var(--offline-bg);
-        border: 1px solid var(--offline);
+        border: 1px solid rgba(239, 68, 68, .2);
         color: var(--offline);
     }
 
     .btn-save {
-        padding: 12px 30px;
+        padding: 10px 24px;
         background: var(--accent);
         color: white;
         border: none;
         border-radius: var(--radius-sm);
         font-weight: 600;
+        font-size: 13px;
         cursor: pointer;
-        transition: opacity .2s;
+        transition: all .2s;
+        font-family: inherit;
     }
 
     .btn-save:hover {
-        opacity: 0.9;
+        background: var(--accent-hover);
+        box-shadow: 0 4px 12px rgba(99, 102, 241, .3);
+        transform: translateY(-1px);
+    }
+
+    .btn-test {
+        padding: 8px 16px;
+        background: var(--bg-card);
+        border: 1px solid var(--accent);
+        color: var(--accent);
+        border-radius: var(--radius-sm);
+        font-weight: 600;
+        font-size: 12px;
+        cursor: pointer;
+        transition: all .2s;
+        font-family: inherit;
+        white-space: nowrap;
+    }
+
+    .btn-test:hover {
+        background: var(--accent-light);
     }
 
     .card-footer {
         padding: 16px 20px;
-        background: rgba(0, 0, 0, 0.1);
         border-top: 1px solid var(--border);
         display: flex;
-        justify-content: flex-end;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .card-footer-left {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .section-divider {
+        border-top: 1px solid var(--border);
+        padding-top: 20px;
+        margin-top: 4px;
+    }
+
+    /* Card header icon */
+    .card-header-icon {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .card-header-icon svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
+    /* Test input row */
+    .test-row {
+        display: flex;
+        gap: 10px;
+        align-items: flex-start;
+    }
+
+    .test-row input {
+        flex: 1;
     }
 </style>
 {% endblock %}
@@ -115,19 +186,25 @@
 
     {% if success %}
     <div class="alert alert-success">
-        ✅ {{ success }}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        {{ success }}
     </div>
     {% endif %}
 
     {% if error %}
     <div class="alert alert-error">
-        ❌ {{ error }}
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" x2="9" y1="9" y2="15"/><line x1="9" x2="15" y1="9" y2="15"/></svg>
+        {{ error }}
     </div>
     {% endif %}
 
+    <!-- Telegram Config -->
     <div class="card">
         <div class="card-header">
-            📱 Configuração do Telegram
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/></svg>
+                Configuração do Telegram
+            </div>
         </div>
         <form method="post" action="/settings">
             <div class="card-body">
@@ -136,8 +213,7 @@
                         <label for="bot_token">Token do Bot (HTTP API)</label>
                         <input type="text" id="bot_token" name="bot_token" value="{{ cfg.telegram_bot_token }}"
                             placeholder="Ex: 123456789:ABCdef... ">
-                        <div class="hint">Obtenha o token criando um bot com o <code>@BotFather</code> no Telegram.
-                        </div>
+                        <div class="hint">Obtenha o token criando um bot com o <code>@BotFather</code> no Telegram.</div>
                     </div>
 
                     <div class="form-group">
@@ -148,7 +224,7 @@
                     </div>
                 </div>
 
-                <div class="settings-section" style="border-top: 1px solid var(--border); padding-top: 20px;">
+                <div class="settings-section section-divider">
                     <div class="form-group">
                         <label for="fmt_offline">Formato da Mensagem: Câmera OFFLINE</label>
                         <textarea id="fmt_offline" name="fmt_offline">{{ cfg.telegram_msg_format_offline }}</textarea>
@@ -170,32 +246,34 @@
                     </div>
                 </div>
             </div>
-            <div class="card-footer" style="display: flex; justify-content: space-between; align-items: center;">
-                <div>
-                    <button type="button" class="btn-save"
-                        style="background: var(--accent-hover); padding: 8px 16px; font-size: 12px;"
-                        onclick="testTelegram()">🔔 Enviar Teste</button>
-                    <div id="telegram_result" class="hint"
-                        style="display: inline-block; margin-left: 10px; margin-top: 0;"></div>
+            <div class="card-footer">
+                <div class="card-footer-left">
+                    <button type="button" class="btn-test" onclick="testTelegram()">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline;vertical-align:middle;margin-right:4px;"><path d="M22 2 11 13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+                        Enviar Teste
+                    </button>
+                    <span id="telegram_result" class="hint" style="margin-top:0;"></span>
                 </div>
-                <button type="submit" class="btn-save">💾 Salvar Configurações</button>
+                <button type="submit" class="btn-save">Salvar Configurações</button>
             </div>
         </form>
     </div>
 
+    <!-- Diagnostics -->
     <div class="card" style="margin-top: 24px;">
         <div class="card-header">
-            🛠️ Ferramentas de Diagnóstico
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10"/><path d="m9 12 2 2 4-4"/></svg>
+                Ferramentas de Diagnóstico
+            </div>
         </div>
         <div class="card-body">
             <div class="settings-section">
                 <div class="form-group">
-                    <label for="zabbix_ip">Testar Conectividade com Servidor Externo (Zabbix/Outros)</label>
-                    <div style="display: flex; gap: 10px;">
+                    <label for="zabbix_ip">Testar Conectividade com Servidor Externo</label>
+                    <div class="test-row">
                         <input type="text" id="zabbix_ip" name="zabbix_ip" placeholder="Ex: 10.0.2.2 ou 192.168.1.50">
-                        <button type="button" class="btn-save"
-                            style="background: var(--accent-hover); white-space: nowrap;" onclick="testZabbix()">Testar
-                            IP</button>
+                        <button type="button" class="btn-test" onclick="testZabbix()">Testar IP</button>
                     </div>
                     <div id="zabbix_result" class="hint"></div>
                 </div>
@@ -213,7 +291,7 @@
             resDiv.innerHTML = '<span style="color: var(--offline)">Insira um IP para testar.</span>';
             return;
         }
-        resDiv.innerHTML = 'Testando...';
+        resDiv.innerHTML = '<span style="color: var(--text-muted)">Testando...</span>';
         try {
             const formData = new FormData();
             formData.append('ip', ip);
@@ -223,12 +301,12 @@
             });
             const data = await resp.json();
             if (data.ok) {
-                resDiv.innerHTML = `<span style="color: var(--online)">✅ ${data.message}</span>`;
+                resDiv.innerHTML = `<span style="color: var(--online)">✓ ${data.message}</span>`;
             } else {
-                resDiv.innerHTML = `<span style="color: var(--offline)">❌ ${data.message}</span>`;
+                resDiv.innerHTML = `<span style="color: var(--offline)">✗ ${data.message}</span>`;
             }
         } catch (e) {
-            resDiv.innerHTML = `<span style="color: var(--offline)">❌ Erro na requisição: ${e}</span>`;
+            resDiv.innerHTML = `<span style="color: var(--offline)">✗ Erro na requisição: ${e}</span>`;
         }
     }
 
@@ -237,7 +315,7 @@
         const chatid = document.getElementById('chat_id').value;
         const resDiv = document.getElementById('telegram_result');
 
-        resDiv.innerHTML = 'Enviando...';
+        resDiv.innerHTML = '<span style="color: var(--text-muted)">Enviando...</span>';
         try {
             const formData = new FormData();
             formData.append('bot_token', token);
@@ -250,18 +328,18 @@
 
             if (!resp.ok) {
                 const text = await resp.text();
-                resDiv.innerHTML = `<span style="color: var(--offline)">❌ Erro no Servidor (${resp.status}): ${text.substring(0, 50)}</span>`;
+                resDiv.innerHTML = `<span style="color: var(--offline)">✗ Erro (${resp.status}): ${text.substring(0, 50)}</span>`;
                 return;
             }
 
             const data = await resp.json();
             if (data.ok) {
-                resDiv.innerHTML = `<span style="color: var(--online)">✅ ${data.message}</span>`;
+                resDiv.innerHTML = `<span style="color: var(--online)">✓ ${data.message}</span>`;
             } else {
-                resDiv.innerHTML = `<span style="color: var(--offline)">❌ ${data.message || 'Erro desconhecido'}</span>`;
+                resDiv.innerHTML = `<span style="color: var(--offline)">✗ ${data.message || 'Erro desconhecido'}</span>`;
             }
         } catch (e) {
-            resDiv.innerHTML = `<span style="color: var(--offline)">❌ Erro na requisição: ${e}</span>`;
+            resDiv.innerHTML = `<span style="color: var(--offline)">✗ Erro na requisição: ${e}</span>`;
         }
     }
 </script>

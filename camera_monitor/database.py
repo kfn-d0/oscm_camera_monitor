@@ -78,8 +78,6 @@ class Database:
         Path(self._path).parent.mkdir(parents=True, exist_ok=True)
         self._init_schema()
 
-    # Gerenciamento de conexão (pool por thread)
-
     def _get_conn(self) -> sqlite3.Connection:
         """Retorna a conexão da thread atual, criando-a se necessário."""
         conn = getattr(self._local, "conn", None)
@@ -127,8 +125,6 @@ class Database:
             
         conn.commit()
         logger.info("Database schema initialized: %s", self._path)
-
-    # Cameras
 
     def upsert_camera(
         self,
@@ -349,8 +345,6 @@ class Database:
             "direction":     direction,
         }
 
-    # Tickets
-
     def open_ticket(self, camera_id: str, reason: str, opened_at: str) -> int:
         with self._cursor() as cur:
             cur.execute(
@@ -392,8 +386,6 @@ class Database:
                 (limit,),
             ).fetchall()
         return [dict(r) for r in rows]
-
-    # Dashboard
 
     def get_overview_stats(self) -> dict:
         conn = self._get_conn()

@@ -1,0 +1,24 @@
+2026-02-27 13:05:58 [INFO] __main__: ========================================
+2026-02-27 13:05:58 [INFO] __main__: Camera Monitor starting up
+2026-02-27 13:05:58 [INFO] __main__: ========================================
+2026-02-27 13:05:58 [INFO] camera_monitor.database: Database schema initialized: data/camera_monitor.db
+2026-02-27 13:05:58 [INFO] __main__: Synced 0 camera(s) to database.
+2026-02-27 13:05:58 [INFO] __main__: Web dashboard: http://0.0.0.0:9001
+2026-02-27 13:05:58 [INFO] camera_monitor.monitor: Monitor started - 0 cameras
+2026-02-27 13:05:59 [INFO] camera_monitor.monitor: Cleanup loop started (retention=90d)
+2026-02-27 13:21:18 [INFO] __main__: ========================================
+2026-02-27 13:21:18 [INFO] __main__: Camera Monitor starting up
+2026-02-27 13:21:18 [INFO] __main__: ========================================
+2026-02-27 13:21:18 [INFO] camera_monitor.database: Database schema initialized: data/camera_monitor.db
+2026-02-27 13:21:18 [INFO] __main__: Synced 0 camera(s) to database.
+2026-02-27 13:21:18 [INFO] __main__: Web dashboard: http://0.0.0.0:9001
+2026-02-27 13:21:18 [INFO] camera_monitor.monitor: Monitor started - 0 cameras
+2026-02-27 13:21:18 [INFO] camera_monitor.monitor: Cleanup loop started (retention=90d)
+2026-02-27 13:22:21 [INFO] camera_monitor.web.app: config.yaml sincronizado com 1 câmeras e novas configs
+2026-02-27 13:22:21 [INFO] camera_monitor.web.app: CAMERA_UPSERT id=cam999-icmp-google name='Teste ICMP Google' edit=True
+2026-02-27 13:22:31 [INFO] camera_monitor.web.app: config.yaml sincronizado com 0 câmeras e novas configs
+2026-02-27 13:22:31 [INFO] camera_monitor.web.app: CAMERA_DELETED id=cam999-icmp-google
+2026-02-27 13:22:50 [INFO] camera_monitor.web.app: config.yaml sincronizado com 1 câmeras e novas configs
+2026-02-27 13:22:50 [INFO] camera_monitor.web.app: CAMERA_UPSERT id=cam001-icmp-8-8-8-8 name='googlecamera' edit=False
+2026-02-27 13:27:54 [INFO] camera_monitor.web.app: config.yaml sincronizado com 0 câmeras e novas configs
+2026-02-27 13:27:54 [INFO] camera_monitor.web.app: CAMERA_DELETED id=cam001-icmp-8-8-8-8

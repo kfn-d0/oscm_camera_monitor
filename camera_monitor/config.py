@@ -50,7 +50,7 @@ class AppConfig:
     )
     retention_days: int = 90
     vacuum_interval_days: int = 7
-    zabbix_api_key: str = ""  
+    zabbix_api_key: str = ""
 
     @property
     def enabled_cameras(self) -> List[CameraConfig]:

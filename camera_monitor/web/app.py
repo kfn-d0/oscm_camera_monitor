@@ -42,7 +42,7 @@ def _fmt_duration(seconds: float) -> str:
 def create_app(db: Database, cfg: AppConfig, notifier: Notifier, config_path: str = "") -> FastAPI:
     app = FastAPI(
         title="Camera Monitor",
-        description="Camera IP Monitoring Dashboard – São Luís",
+        description="Camera IP Monitoring Dashboard",
         docs_url=None,
         redoc_url=None,
     )
@@ -621,7 +621,6 @@ def create_app(db: Database, cfg: AppConfig, notifier: Notifier, config_path: st
         token = (bot_token or cfg.telegram_bot_token or "").strip()
         chid  = (chat_id or cfg.telegram_chat_id or "").strip()
 
-        # Limpeza do token (caso o usuário cole a URL ou inclua "bot" no início)
         if "api.telegram.org/bot" in token:
             token = token.split("/bot")[-1].split("/")[0]
         elif token.lower().startswith("bot"):
@@ -663,20 +662,6 @@ def create_app(db: Database, cfg: AppConfig, notifier: Notifier, config_path: st
     @app.get("/health")
     async def health():
         return {"status": "ok"}
-
-    # =========================================================================
-    # Zabbix API  —  endpoints públicos com API key opcional
-    # =========================================================================
-    #
-    # Configuração no config.yaml:
-    #   zabbix_api_key: "sua-chave-secreta"   # vazio = acesso apenas localhost
-    #
-    # Endpoints:
-    #   GET /api/zabbix/ping                    → health check do serviço
-    #   GET /api/zabbix/summary?key=K           → totais (online/offline)
-    #   GET /api/zabbix/discovery?key=K         → LLD: lista de câmeras
-    #   GET /api/zabbix/camera/{id}?key=K       → métricas de uma câmera
-    # =========================================================================
 
     async def _zabbix_auth(
         request: Request,
@@ -727,9 +712,9 @@ def create_app(db: Database, cfg: AppConfig, notifier: Notifier, config_path: st
     @app.get("/api/zabbix/discovery")
     async def zabbix_discovery(_: None = Depends(_zabbix_auth)):
         """
-        Retorna lista de câmeras no formato LLD nativo do Zabbix.
+        Retorna lista de cams no formato LLD nativo do Zabbix
         O Zabbix usa esta lista para criar itens e triggers automaticamente
-        por câmera (Low-Level Discovery).
+        por câmera ( lowlevel discovery)
         """
         cameras = db.get_cameras_with_status()
         return [

@@ -42,8 +42,8 @@ def setup_logging(log_path: str, level: int = logging.INFO) -> None:
 
 TELEGRAM_API = "https://api.telegram.org/bot{token}/sendMessage"
 
-_TELEGRAM_MIN_INTERVAL_S: float = 1.1   
-_TELEGRAM_QUEUE_MAXSIZE:  int   = 50    
+_TELEGRAM_MIN_INTERVAL_S: float = 1.1
+_TELEGRAM_QUEUE_MAXSIZE:  int   = 50
 
 
 class Notifier:

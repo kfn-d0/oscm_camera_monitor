@@ -1,48 +1,48 @@
 {% extends "base.html" %}
 
 {% block title %}Status do Sistema – Camera Monitor{% endblock %}
-{% block page_title %}🖥️ Status do Sistema{% endblock %}
+{% block page_title %}Status do Sistema{% endblock %}
 
 {% block extra_head %}
 <style>
     .sys-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+        grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
         gap: 20px;
         margin-bottom: 24px;
     }
 
     .progress-bar-wrap {
         background: var(--bg-input);
-        border-radius: 4px;
-        height: 8px;
+        border-radius: 6px;
+        height: 6px;
         overflow: hidden;
-        margin-top: 8px;
+        margin-top: 10px;
     }
 
     .progress-bar {
         height: 100%;
-        border-radius: 4px;
+        border-radius: 6px;
         transition: width .4s ease;
     }
 
     .bar-ok {
-        background: linear-gradient(90deg, #3fb950, #56d364);
+        background: linear-gradient(90deg, var(--online), #6ee7b7);
     }
 
     .bar-warn {
-        background: linear-gradient(90deg, #d29922, #e3b341);
+        background: linear-gradient(90deg, var(--unknown), #fcd34d);
     }
 
     .bar-danger {
-        background: linear-gradient(90deg, #f85149, #ff6b6b);
+        background: linear-gradient(90deg, var(--offline), #fca5a5);
     }
 
     .metric-row {
         display: flex;
         justify-content: space-between;
         align-items: center;
-        padding: 9px 0;
+        padding: 10px 0;
         border-bottom: 1px solid var(--border-subtle);
         font-size: 13.5px;
     }
@@ -53,6 +53,7 @@
 
     .metric-label {
         color: var(--text-secondary);
+        font-weight: 500;
     }
 
     .metric-value {
@@ -73,39 +74,56 @@
         color: var(--offline);
     }
 
+    /* Projection card */
     .projection-card {
-        background: linear-gradient(135deg, rgba(31, 111, 235, .08), rgba(31, 111, 235, .02));
-        border: 1px solid rgba(31, 111, 235, .3);
+        background: var(--bg-card);
+        border: 1px solid var(--border);
         border-radius: var(--radius);
-        padding: 20px;
+        overflow: hidden;
         margin-bottom: 24px;
+        box-shadow: var(--shadow-sm);
     }
 
-    .projection-card h3 {
+    .projection-header {
+        padding: 16px 20px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: center;
+        gap: 10px;
         font-size: 14px;
-        font-weight: 700;
-        margin-bottom: 16px;
-        color: var(--accent-hover);
+        font-weight: 600;
+    }
+
+    .projection-header svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
+    .projection-body {
+        padding: 0;
     }
 
     .proj-table {
         width: 100%;
         font-size: 13px;
+        border-collapse: collapse;
     }
 
     .proj-table th {
         text-align: left;
-        color: var(--text-secondary);
+        color: var(--text-muted);
         font-size: 11px;
         font-weight: 600;
         text-transform: uppercase;
         letter-spacing: .7px;
-        padding: 6px 0;
+        padding: 10px 20px;
         border-bottom: 1px solid var(--border);
+        background: var(--bg-input);
     }
 
     .proj-table td {
-        padding: 8px 0;
+        padding: 10px 20px;
         border-bottom: 1px solid var(--border-subtle);
         font-family: 'JetBrains Mono', monospace;
         font-size: 12.5px;
@@ -118,6 +136,7 @@
     .td-label {
         color: var(--text-secondary);
         font-family: 'Inter', sans-serif !important;
+        font-weight: 500;
     }
 
     .td-value {
@@ -128,263 +147,311 @@
     .td-ok {
         color: var(--online);
         text-align: right;
+        font-size: 11px;
     }
 
     .td-warn {
         color: var(--unknown);
         text-align: right;
+        font-size: 11px;
     }
 
-    .alert-box {
-        border-radius: var(--radius-sm);
-        padding: 12px 16px;
-        font-size: 13px;
-        margin-bottom: 16px;
+    /* Card header with icon */
+    .card-header-icon {
         display: flex;
+        align-items: center;
         gap: 10px;
-        align-items: flex-start;
-        line-height: 1.5;
     }
 
-    .alert-ok {
-        background: var(--online-bg);
-        border: 1px solid var(--online);
+    .card-header-icon svg {
+        width: 18px;
+        height: 18px;
+        color: var(--accent);
+    }
+
+    /* Config grid */
+    .config-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 0;
+    }
+
+    .config-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 20px;
+        border-bottom: 1px solid var(--border-subtle);
+        border-right: 1px solid var(--border-subtle);
+        font-size: 13px;
+    }
+
+    .config-item:last-child {
+        border-bottom: none;
+    }
+
+    .config-label {
+        color: var(--text-secondary);
+        font-weight: 500;
+    }
+
+    .config-value {
+        font-family: 'JetBrains Mono', monospace;
+        font-size: 12px;
+        font-weight: 600;
         color: var(--online);
-    }
-
-    .alert-warn {
-        background: var(--unknown-bg);
-        border: 1px solid var(--unknown);
-        color: var(--unknown);
-    }
-
-    .alert-danger {
-        background: var(--offline-bg);
-        border: 1px solid var(--offline);
-        color: var(--offline);
     }
 </style>
 {% endblock %}
 
 {% block content %}
 
+<!-- Health Alert -->
+{% if disk.pct < 70 and s.projected_db_mb_with_retention < 2000 %}
+<div class="alert-box alert-ok">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+    <div><strong>Sistema saudável.</strong> Capacidade de disco e banco de dados adequadas para operação contínua por 1 ano com as configurações atuais.</div>
+</div>
+{% elif disk.pct >= 70 and disk.pct < 85 %}
+<div class="alert-box alert-warn">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" x2="12" y1="9" y2="13"/><line x1="12" x2="12.01" y1="17" y2="17"/></svg>
+    <div><strong>Atenção: disco acima de 70%.</strong> Considere aumentar a capacidade ou reduzir o período de retenção.</div>
+</div>
+{% elif disk.pct >= 85 %}
+<div class="alert-box alert-danger">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" x2="12" y1="8" y2="12"/><line x1="12" x2="12.01" y1="16" y2="16"/></svg>
+    <div><strong>Disco acima de 85%! Ação necessária.</strong> Risco de falha por falta de espaço.</div>
+</div>
+{% endif %}
 
-{% if disk.pct < 70 and s.projected_db_mb_with_retention < 2000 %} <div class="alert-box alert-ok">
-    ✅ <div><strong>Sistema saudável.</strong> Capacidade de disco e banco de dados adequadas para operação contínua por
-        1 ano com as configurações atuais.</div>
+<!-- Projection Card -->
+<div class="projection-card">
+    <div class="projection-header">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m22 12-4 4-4-4"/><path d="M18 16V4"/><path d="m2 12 4-4 4 4"/><path d="M6 8v12"/></svg>
+        Projeção de Capacidade – 1 Ano ({{ s.num_cameras }} câmeras, check a cada {{ s.check_interval_s }}s)
     </div>
-    {% elif disk.pct >= 70 and disk.pct < 85 %} <div class="alert-box alert-warn">
-        ⚠️ <div><strong>Atenção: disco acima de 70%.</strong> Considere aumentar a capacidade ou reduzir o período de
-            retenção.</div>
-        </div>
-        {% elif disk.pct >= 85 %}
-        <div class="alert-box alert-danger">
-            🚨 <div><strong>Disco acima de 85%! Ação necessária.</strong> Risco de falha por falta de espaço.</div>
-        </div>
-        {% endif %}
+    <div class="projection-body">
+        <table class="proj-table">
+            <thead>
+                <tr>
+                    <th>Métrica</th>
+                    <th style="text-align:right;">Valor</th>
+                    <th style="text-align:right;">Observação</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td class="td-label">Checks por dia</td>
+                    <td class="td-value">{{ "{:,}".format(s.checks_per_day) }}</td>
+                    <td class="td-ok">✓ ok</td>
+                </tr>
+                <tr>
+                    <td class="td-label">Checks por ano (sem retenção)</td>
+                    <td class="td-value">{{ "{:,}".format(s.checks_per_year) }}</td>
+                    <td class="td-warn">⚠ acumulado</td>
+                </tr>
+                <tr>
+                    <td class="td-label">Checks retidos (máx. {{ s.retention_days }}d)</td>
+                    <td class="td-value">{{ "{:,}".format(s.checks_per_day * s.retention_days) }}</td>
+                    <td class="td-ok">✓ retenção ativa</td>
+                </tr>
+                <tr>
+                    <td class="td-label">Tamanho banco S/ retenção (1 ano)</td>
+                    <td class="td-value">{{ s.projected_db_mb_year_no_retention }} MB</td>
+                    <td class="td-warn">⚠ sem limpeza</td>
+                </tr>
+                <tr>
+                    <td class="td-label">Tamanho banco C/ retenção (máx)</td>
+                    <td class="td-value">{{ s.projected_db_mb_with_retention }} MB</td>
+                    <td class="td-ok">✓ OK – retenção {{ s.retention_days }}d</td>
+                </tr>
+                <tr>
+                    <td class="td-label">Logs (máx – RotatingFileHandler)</td>
+                    <td class="td-value">70 MB</td>
+                    <td class="td-ok">✓ 10MB × 7 arquivos</td>
+                </tr>
+                <tr>
+                    <td class="td-label">Disco total estimado (1 ano)</td>
+                    <td class="td-value" style="color:var(--accent);font-weight:700;">
+                        {{ (s.projected_db_mb_with_retention + 70 + s.log_size_mb) | round(0) | int }} MB
+                    </td>
+                    <td class="td-ok">✓ Muito abaixo do limite</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
 
-        
-        <div class="projection-card">
-            <h3>📈 Projeção de Capacidade – 1 Ano ({{ s.num_cameras }} câmeras, check a cada {{ s.check_interval_s }}s)
-            </h3>
-            <table class="proj-table">
-                <thead>
-                    <tr>
-                        <th>Métrica</th>
-                        <th style="text-align:right;">Valor</th>
-                        <th style="text-align:right;">Observação</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr>
-                        <td class="td-label">Checks por dia</td>
-                        <td class="td-value">{{ "{:,}".format(s.checks_per_day) }}</td>
-                        <td class="td-ok">✔ ok</td>
-                    </tr>
-                    <tr>
-                        <td class="td-label">Checks por ano (sem retenção)</td>
-                        <td class="td-value">{{ "{:,}".format(s.checks_per_year) }}</td>
-                        <td class="td-warn">⚠ acumulado</td>
-                    </tr>
-                    <tr>
-                        <td class="td-label">Checks retidos (máx. {{ s.retention_days }}d)</td>
-                        <td class="td-value">{{ "{:,}".format(s.checks_per_day * s.retention_days) }}</td>
-                        <td class="td-ok">✔ retenção ativa</td>
-                    </tr>
-                    <tr>
-                        <td class="td-label">Tamanho banco S/ retenção (1 ano)</td>
-                        <td class="td-value">{{ s.projected_db_mb_year_no_retention }} MB</td>
-                        <td class="td-warn">⚠ sem limpeza</td>
-                    </tr>
-                    <tr>
-                        <td class="td-label">Tamanho banco C/ retenção (máx)</td>
-                        <td class="td-value">{{ s.projected_db_mb_with_retention }} MB</td>
-                        <td class="td-ok">✔ OK – retenção {{ s.retention_days }}d</td>
-                    </tr>
-                    <tr>
-                        <td class="td-label">Logs (máx – RotatingFileHandler)</td>
-                        <td class="td-value">70 MB</td>
-                        <td class="td-ok">✔ 10MB × 7 arquivos</td>
-                    </tr>
-                    <tr>
-                        <td class="td-label">Disco total estimado (1 ano)</td>
-                        <td class="td-value" style="color:var(--accent-hover);font-weight:700;">
-                            {{ (s.projected_db_mb_with_retention + 70 + s.log_size_mb) | round(0) | int }} MB
-                        </td>
-                        <td class="td-ok">✔ Muito abaixo do limite de 100GB</td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
+<!-- System Metrics Grid -->
+<div class="sys-grid">
 
-        <div class="sys-grid">
-
-            
-            <div class="card">
-                <div class="card-header">💾 Disco</div>
-                <div class="card-body">
-                    <div class="metric-row">
-                        <span class="metric-label">Total</span>
-                        <span class="metric-value">{{ disk.total_gb }} GB</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Usado</span>
-                        <span
-                            class="metric-value {% if disk.pct < 70 %}metric-ok{% elif disk.pct < 85 %}metric-warn{% else %}metric-danger{% endif %}">
-                            {{ disk.used_gb }} GB ({{ disk.pct }}%)
-                        </span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Livre</span>
-                        <span class="metric-value metric-ok">{{ disk.free_gb }} GB</span>
-                    </div>
-                    <div class="progress-bar-wrap">
-                        <div class="progress-bar {% if disk.pct < 70 %}bar-ok{% elif disk.pct < 85 %}bar-warn{% else %}bar-danger{% endif %}"
-                            style="width: {{ disk.pct }}%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            
-            <div class="card">
-                <div class="card-header">🧠 Memória RAM</div>
-                <div class="card-body">
-                    <div class="metric-row">
-                        <span class="metric-label">Total</span>
-                        <span class="metric-value">{{ mem.total_gb }} GB</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Usado</span>
-                        <span
-                            class="metric-value {% if mem.pct < 70 %}metric-ok{% elif mem.pct < 85 %}metric-warn{% else %}metric-danger{% endif %}">
-                            {{ mem.used_gb }} GB ({{ mem.pct }}%)
-                        </span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Disponível</span>
-                        <span class="metric-value metric-ok">{{ mem.free_gb }} GB</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Processo camera-monitor</span>
-                        <span class="metric-value">{{ proc_mem_mb }} MB</span>
-                    </div>
-                    <div class="progress-bar-wrap">
-                        <div class="progress-bar {% if mem.pct < 70 %}bar-ok{% elif mem.pct < 85 %}bar-warn{% else %}bar-danger{% endif %}"
-                            style="width: {{ mem.pct }}%;"></div>
-                    </div>
-                </div>
-            </div>
-
-            
-            <div class="card">
-                <div class="card-header">🗄️ Banco de Dados (SQLite)</div>
-                <div class="card-body">
-                    <div class="metric-row">
-                        <span class="metric-label">Arquivo</span>
-                        <span class="metric-value" style="font-size:11px;word-break:break-all;">{{ s.db_path }}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Tamanho atual</span>
-                        <span class="metric-value">{{ s.db_size_mb }} MB</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Total de checks</span>
-                        <span class="metric-value">{{ "{:,}".format(s.checks_total) }}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Tickets abertos</span>
-                        <span
-                            class="metric-value {% if s.tickets_open == 0 %}metric-ok{% else %}metric-danger{% endif %}">
-                            {{ s.tickets_open }}
-                        </span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Tickets resolvidos</span>
-                        <span class="metric-value">{{ s.tickets_resolved }}</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Retenção configurada</span>
-                        <span class="metric-value metric-ok">{{ s.retention_days }} dias</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Próximo VACUUM em</span>
-                        <span class="metric-value">a cada {{ vacuum_days }}d</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Check mais antigo</span>
-                        <span class="metric-value" style="font-size:11px;">{{ s.checks_oldest | fmt_ts if
-                            s.checks_oldest else '—' }}</span>
-                    </div>
-                </div>
-            </div>
-
-            
-            <div class="card">
-                <div class="card-header">📄 Logs</div>
-                <div class="card-body">
-                    <div class="metric-row">
-                        <span class="metric-label">Tamanho atual dos logs</span>
-                        <span class="metric-value">{{ s.log_size_mb }} MB</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Política de rotação</span>
-                        <span class="metric-value metric-ok">10 MB × 7 arquivos</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Tamanho máximo possível</span>
-                        <span class="metric-value metric-ok">70 MB</span>
-                    </div>
-                    <div class="metric-row">
-                        <span class="metric-label">Logrotate (systemd)</span>
-                        <span class="metric-value">Configurado</span>
-                    </div>
-                </div>
-            </div>
-
-        </div>
-
-        
-        <div class="card">
-            <div class="card-header">⚙️ Configuração Ativa</div>
-            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:0;">
-                {% set cfgs = [
-                ("Câmeras ativas", s.num_cameras ~ " câmera(s)", "ok"),
-                ("Intervalo de check", s.check_interval_s ~ "s", "ok"),
-                ("Timeout por probe", timeout_s ~ "s", "ok"),
-                ("Threshold falha", fail_thr ~ " falhas", "ok"),
-                ("Threshold recuperação", rec_thr ~ " sucessos", "ok"),
-                ("Sondas ativas", "TCP:554 + ICMP", "ok"),
-                ("Retenção checks", s.retention_days ~ " dias", "ok"),
-                ("VACUUM automático", "a cada " ~ vacuum_days ~ " dias", "ok"),
-                ("Web bind", web_host ~ ":" ~ web_port, "ok"),
-                ] %}
-                {% for label, value, cls in cfgs %}
-                <div class="metric-row" style="padding:10px 20px;border-bottom:1px solid var(--border-subtle);">
-                    <span class="metric-label">{{ label }}</span>
-                    <span class="metric-value metric-ok">{{ value }}</span>
-                </div>
-                {% endfor %}
+    <!-- Disk -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                Disco
             </div>
         </div>
+        <div class="card-body">
+            <div class="metric-row">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">{{ disk.total_gb }} GB</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Usado</span>
+                <span class="metric-value {% if disk.pct < 70 %}metric-ok{% elif disk.pct < 85 %}metric-warn{% else %}metric-danger{% endif %}">
+                    {{ disk.used_gb }} GB ({{ disk.pct }}%)
+                </span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Livre</span>
+                <span class="metric-value metric-ok">{{ disk.free_gb }} GB</span>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar {% if disk.pct < 70 %}bar-ok{% elif disk.pct < 85 %}bar-warn{% else %}bar-danger{% endif %}"
+                    style="width: {{ disk.pct }}%;"></div>
+            </div>
+        </div>
+    </div>
 
-        {% endblock %}
+    <!-- Memory -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 19v-3"/><path d="M10 19v-3"/><path d="M14 19v-3"/><path d="M18 19v-3"/><path d="M8 11V9"/><path d="M16 11V9"/><path d="M12 11V9"/><path d="M2 15h20"/><path d="M2 7a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v1.1a2 2 0 0 0 0 3.837V15H2v-3.063a2 2 0 0 0 0-3.837Z"/></svg>
+                Memória RAM
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="metric-row">
+                <span class="metric-label">Total</span>
+                <span class="metric-value">{{ mem.total_gb }} GB</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Usado</span>
+                <span class="metric-value {% if mem.pct < 70 %}metric-ok{% elif mem.pct < 85 %}metric-warn{% else %}metric-danger{% endif %}">
+                    {{ mem.used_gb }} GB ({{ mem.pct }}%)
+                </span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Disponível</span>
+                <span class="metric-value metric-ok">{{ mem.free_gb }} GB</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Processo camera-monitor</span>
+                <span class="metric-value">{{ proc_mem_mb }} MB</span>
+            </div>
+            <div class="progress-bar-wrap">
+                <div class="progress-bar {% if mem.pct < 70 %}bar-ok{% elif mem.pct < 85 %}bar-warn{% else %}bar-danger{% endif %}"
+                    style="width: {{ mem.pct }}%;"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Database -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5V19A9 3 0 0 0 21 19V5"/><path d="M3 12A9 3 0 0 0 21 12"/></svg>
+                Banco de Dados (SQLite)
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="metric-row">
+                <span class="metric-label">Arquivo</span>
+                <span class="metric-value" style="font-size:11px;word-break:break-all;">{{ s.db_path }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Tamanho atual</span>
+                <span class="metric-value">{{ s.db_size_mb }} MB</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Total de checks</span>
+                <span class="metric-value">{{ "{:,}".format(s.checks_total) }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Tickets abertos</span>
+                <span class="metric-value {% if s.tickets_open == 0 %}metric-ok{% else %}metric-danger{% endif %}">
+                    {{ s.tickets_open }}
+                </span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Tickets resolvidos</span>
+                <span class="metric-value">{{ s.tickets_resolved }}</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Retenção configurada</span>
+                <span class="metric-value metric-ok">{{ s.retention_days }} dias</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Próximo VACUUM em</span>
+                <span class="metric-value">a cada {{ vacuum_days }}d</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Check mais antigo</span>
+                <span class="metric-value" style="font-size:11px;">{{ s.checks_oldest | fmt_ts if s.checks_oldest else '—' }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Logs -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-header-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"/><path d="M14 2v4a2 2 0 0 0 2 2h4"/><path d="M10 13H8"/><path d="M16 17H8"/><path d="M16 13h-2"/></svg>
+                Logs
+            </div>
+        </div>
+        <div class="card-body">
+            <div class="metric-row">
+                <span class="metric-label">Tamanho atual dos logs</span>
+                <span class="metric-value">{{ s.log_size_mb }} MB</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Política de rotação</span>
+                <span class="metric-value metric-ok">10 MB × 7 arquivos</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Tamanho máximo possível</span>
+                <span class="metric-value metric-ok">70 MB</span>
+            </div>
+            <div class="metric-row">
+                <span class="metric-label">Logrotate (systemd)</span>
+                <span class="metric-value">Configurado</span>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<!-- Active Configuration -->
+<div class="card">
+    <div class="card-header">
+        <div class="card-header-icon">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/></svg>
+            Configuração Ativa
+        </div>
+    </div>
+    <div class="config-grid">
+        {% set cfgs = [
+        ("Câmeras ativas", s.num_cameras ~ " câmera(s)", "ok"),
+        ("Intervalo de check", s.check_interval_s ~ "s", "ok"),
+        ("Timeout por probe", timeout_s ~ "s", "ok"),
+        ("Threshold falha", fail_thr ~ " falhas", "ok"),
+        ("Threshold recuperação", rec_thr ~ " sucessos", "ok"),
+        ("Sondas ativas", "TCP:554 + ICMP", "ok"),
+        ("Retenção checks", s.retention_days ~ " dias", "ok"),
+        ("VACUUM automático", "a cada " ~ vacuum_days ~ " dias", "ok"),
+        ("Web bind", web_host ~ ":" ~ web_port, "ok"),
+        ] %}
+        {% for label, value, cls in cfgs %}
+        <div class="config-item">
+            <span class="config-label">{{ label }}</span>
+            <span class="config-value">{{ value }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+{% endblock %}
